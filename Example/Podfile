@@ -1,0 +1,13 @@
+use_frameworks!
+
+platform :ios, '9.0'
+
+target 'xAPI_New_Example' do
+  pod 'xAPI_New', :path => '../'
+
+  target 'xAPI_New_Tests' do
+    inherit! :search_paths
+
+    
+  end
+end
