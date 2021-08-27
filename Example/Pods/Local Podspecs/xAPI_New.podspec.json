@@ -1,0 +1,32 @@
+{
+  "name": "xAPI_New",
+  "version": "1.0.0",
+  "summary": "A short description of xAPI_New.",
+  "swift_versions": "5",
+  "description": "TODO: Add long description of the pod here.",
+  "homepage": "https://github.com/kaibuleite/xAPI_New",
+  "license": {
+    "type": "MIT",
+    "file": "LICENSE"
+  },
+  "authors": {
+    "kaibuleite": "177955297@qq.com"
+  },
+  "source": {
+    "git": "https://github.com/kaibuleite/xAPI_New.git",
+    "tag": "1.0.0"
+  },
+  "platforms": {
+    "ios": "10.0"
+  },
+  "source_files": "xAPI_New/Classes/**/*",
+  "dependencies": {
+    "Alamofire": [
+
+    ],
+    "xExtension": [
+
+    ]
+  },
+  "swift_version": "5"
+}

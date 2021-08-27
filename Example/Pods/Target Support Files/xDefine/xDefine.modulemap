@@ -1,0 +1,6 @@
+framework module xDefine {
+  umbrella header "xDefine-umbrella.h"
+
+  export *
+  module * { export * }
+}

@@ -1,0 +1,32 @@
+PODS:
+  - Alamofire (5.4.3)
+  - xAPI_New (1.0.0):
+    - Alamofire
+    - xExtension
+  - xDefine (1.0.4)
+  - xExtension (1.1.1):
+    - xDefine
+
+DEPENDENCIES:
+  - xAPI_New (from `../`)
+
+SPEC REPOS:
+  https://github.com/kaibuleite/xSpecs.git:
+    - xDefine
+    - xExtension
+  https://mirrors.tuna.tsinghua.edu.cn/git/CocoaPods/Specs.git:
+    - Alamofire
+
+EXTERNAL SOURCES:
+  xAPI_New:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  Alamofire: e447a2774a40c996748296fa2c55112fdbbc42f9
+  xAPI_New: 1565f8f5f9a9985c84f1ead982eed3fbe77f6722
+  xDefine: ca6c6eef825544db8b43409e66dbff05eca7ac58
+  xExtension: 70d1f6b92b268f1e36236f8be26ed86c72628a0b
+
+PODFILE CHECKSUM: baa90110d69d10eb2e16e9e7ac05485e8ed6a224
+
+COCOAPODS: 1.9.1

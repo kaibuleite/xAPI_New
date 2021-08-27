@@ -1,6 +1,11 @@
+# 清华大学源
+source 'https://mirrors.tuna.tsinghua.edu.cn/git/CocoaPods/Specs.git'
+# 私有源
+source 'https://github.com/kaibuleite/xSpecs.git'
+
 use_frameworks!
 
-platform :ios, '9.0'
+platform :ios, '10.0'
 
 target 'xAPI_New_Example' do
   pod 'xAPI_New', :path => '../'

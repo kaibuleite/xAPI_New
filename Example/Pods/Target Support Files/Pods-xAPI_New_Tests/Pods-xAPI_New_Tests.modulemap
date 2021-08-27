@@ -1,0 +1,6 @@
+framework module Pods_xAPI_New_Tests {
+  umbrella header "Pods-xAPI_New_Tests-umbrella.h"
+
+  export *
+  module * { export * }
+}
