@@ -149,7 +149,7 @@ open class xAPI: NSObject {
         return json
     }
     // 解析失败数据
-    open class func serializerResponseFailure(data: Data?) -> Any? {
+    open class func serializerResponseError(code : Int?, data: Data?) -> Any? {
         // 尝试解析成JSON
         guard let obj = data else { return nil }
         let json = try? JSONSerialization.jsonObject(with: obj, options: .mutableContainers)

@@ -44,8 +44,8 @@ class API: xAPI_New.xAPI {
         return data
     }
     /* 考虑一些奇葩风格（Restful）下失败用 ResponseCode 导致无法按照正常流程解析 */
-    override class func serializerResponseFailure(data: Data?) -> Any? {
-        let obj = super.serializerResponseFailure(data: data)
+    override class func serializerResponseError(code: Int?, data: Data?) -> Any? {
+        let obj = super.serializerResponseError(code: code, data: data)
         // 可以判断是否网页崩溃，直接显示网页
         return obj
     }

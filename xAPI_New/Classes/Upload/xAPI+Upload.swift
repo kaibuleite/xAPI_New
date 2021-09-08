@@ -93,7 +93,7 @@ extension xAPI {
                 case let .failure(err):
                     self.logRequestError(err)
                     self.logRequestInfo(url: fm_url, method: method, header: fm_head, parameter: fm_parm)
-                    let data = self.serializerResponseFailure(data: rep.data)
+                    let data = self.serializerResponseError(code: err.responseCode, data: rep.data)
                     completed(false, data)
                 }
             }
@@ -108,7 +108,7 @@ extension xAPI {
                 case let .failure(err):
                     self.logRequestError(err)
                     self.logRequestInfo(url: fm_url, method: method, header: fm_head, parameter: fm_parm)
-                    let data = self.serializerResponseFailure(data: rep.data)
+                    let data = self.serializerResponseError(code: err.responseCode, data: rep.data)
                     completed(false, data)
                 }
             }
@@ -123,7 +123,7 @@ extension xAPI {
                 case let .failure(err):
                     self.logRequestError(err)
                     self.logRequestInfo(url: fm_url, method: method, header: fm_head, parameter: fm_parm)
-                    let data = self.serializerResponseFailure(data: rep.data)
+                    let data = self.serializerResponseError(code: err.responseCode, data: rep.data)
                     completed(false, data)
                 }
             }
