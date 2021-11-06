@@ -36,9 +36,10 @@ public class xApiRequestResult: NSObject {
     /// 打印内容
     public func log()
     {
+        print("========== API请求 ")
         switch self.state {
-        case .success:  print("API请求 ✅成功\n")
-        case .failure:  print("API请求 ❌失败\n")
+        case .success:  print("✅成功")
+        case .failure:  print("❌失败")
         }
         self.responseDataSerializerResult?.log()
     }

@@ -51,11 +51,17 @@ public class xApiResponseDataSerializerResult: NSObject {
     /// 打印内容
     public func log()
     {
+        print("===== API响应数据解析")
         switch self.state {
-        case .success:  print("API响应数据解析 ✅成功\n")
-        case .failure:  print("API响应数据解析 ❌失败\n")
+        case .success:  print("✅成功")
+        case .failure:  print("❌失败")
         }
-        print("API响应数据解析结果:")
+        print("===== 响应数据逻辑")
+        switch self.code {
+        case .normal:   print("✅正常")
+        case .error:    print("❌错误")
+        }
+        print("===== 响应数据解析结果")
         if let obj = self.data {
             print(obj)
         } else {
