@@ -34,17 +34,19 @@ class API: xAPI_New.xAPI {
     
     // MARK: - 重写响应配置
     /* 一般都会解析成JSON,在解析结果里面做进一步处理 */
-    override class func serializerResponse(json: Any) -> Any? {
-        guard let info = super.serializerResponse(json: json) as? [String : Any] else { return nil}
+    override class func serializerResponse(json: Any) -> xApiResponseDataSerializerResult {
+        guard let info = json as? [String : Any] else {
+            return .init(state: .failure, data: json)
+        }
         // print(info)
         let code = info["code"] as! Int
         let msg = info["msg"] as! String
         msg.xAlertTip()
         let data = info["data"]
-        return data
+        return .init(state: .success, data: data)
     }
     /* 考虑一些奇葩风格（Restful）下失败用 ResponseCode 导致无法按照正常流程解析 */
-    override class func serializerResponseError(code: Int?, data: Data?) -> Any? {
+    override class func serializerResponseError(code: Int?, data: Data?) -> xApiResponseDataSerializerResult {
         let obj = super.serializerResponseError(code: code, data: data)
         // 可以判断是否网页崩溃，直接显示网页
         return obj
@@ -56,13 +58,13 @@ class API: xAPI_New.xAPI {
         var parameter = [String : String]()
         parameter["page"] = "1"
         self.post(urlStr: "goods/category_list", header: nil, parameter: parameter) {
-            (isSuccess, data) in
+            (result) in
             // isSuccess表示接口响应结果，失败不一定没数据，推荐用实际的Data来判断接口是否成功
-            if let info = data as? [String : Any] {
+            if let info = result.responseDataSerializerResult?.data as? [String : Any] {
                 completed(true, info)
             } else {
                 completed(false, .init())
-            } 
+            }
         }
     }
 }

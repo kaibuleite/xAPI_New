@@ -74,7 +74,7 @@ open class xAPI: NSObject {
     
     // MARK: - 请求回调
     /// 请求完成回调
-    public typealias xHandlerApiReqCompleted = (Bool, Any?) -> Void
+    public typealias xHandlerApiReqCompleted = (xApiRequestResult) -> Void
     
     // MARK: - 上传回调
     /// 上传进度回调(当前下载量，总数据量，下载进度)
@@ -137,22 +137,24 @@ open class xAPI: NSObject {
     
     // MARK: - 解析响应数据（可重写）
     // 解析成功数据
-    open class func serializerResponse(data: Data) -> Any? {
+    open class func serializerResponse(data: Data) -> xApiResponseDataSerializerResult {
         // 尝试解析成JSON
         let json = try? JSONSerialization.jsonObject(with: data, options: .mutableContainers)
-        return json
+        return .init(state: .success, data: json)
     }
-    open class func serializerResponse(string: String) -> Any? {
-        return string
+    open class func serializerResponse(string: String) -> xApiResponseDataSerializerResult {
+        return .init(state: .success, data: string)
     }
-    open class func serializerResponse(json: Any) -> Any? {
-        return json
+    open class func serializerResponse(json: Any) -> xApiResponseDataSerializerResult {
+        return .init(state: .success, data: json)
     }
     // 解析失败数据
-    open class func serializerResponseError(code : Int?, data: Data?) -> Any? {
+    open class func serializerResponseError(code : Int?, data: Data?) -> xApiResponseDataSerializerResult {
         // 尝试解析成JSON
-        guard let obj = data else { return nil }
+        guard let obj = data else {
+            return .init(state: .failure, data: data)
+        }
         let json = try? JSONSerialization.jsonObject(with: obj, options: .mutableContainers)
-        return json
+        return .init(state: .success, data: json)
     }
 }

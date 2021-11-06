@@ -57,14 +57,14 @@ extension xAPI {
                 (rep) in
                 switch rep.result {
                 case let .success(obj):
-                    let data = self.serializerResponse(data: obj)
-                    completed(true, data)
+                    let result = self.serializerResponse(data: obj)
+                    completed(.init(state: .success, responseDataSerializerResult: result))
                     
                 case let .failure(err):
                     self.logRequestError(err)
                     self.logRequestInfo(url: fm_url, method: method, header: fm_head, parameter: fm_parm)
-                    let data = self.serializerResponseError(code: err.responseCode, data: rep.data)
-                    completed(false, data)
+                    let result = self.serializerResponseError(code: err.responseCode, data: rep.data)
+                    completed(.init(state: .failure, responseDataSerializerResult: result))
                 } 
             }
         case .string:
@@ -72,14 +72,14 @@ extension xAPI {
                 (rep) in
                 switch rep.result {
                 case let .success(obj):
-                    let data = self.serializerResponse(string: obj)
-                    completed(true, data)
+                    let result = self.serializerResponse(string: obj)
+                    completed(.init(state: .failure, responseDataSerializerResult: result))
                     
                 case let .failure(err):
                     self.logRequestError(err)
                     self.logRequestInfo(url: fm_url, method: method, header: fm_head, parameter: fm_parm)
-                    let data = self.serializerResponseError(code: err.responseCode, data: rep.data)
-                    completed(false, data)
+                    let result = self.serializerResponseError(code: err.responseCode, data: rep.data)
+                    completed(.init(state: .failure, responseDataSerializerResult: result))
                 }
             }
         case .json:
@@ -87,14 +87,14 @@ extension xAPI {
                 (rep) in
                 switch rep.result {
                 case let .success(obj):
-                    let data = self.serializerResponse(json: obj)
-                    completed(true, data)
+                    let result = self.serializerResponse(json: obj)
+                    completed(.init(state: .success, responseDataSerializerResult: result))
                     
                 case let .failure(err):
                     self.logRequestError(err)
                     self.logRequestInfo(url: fm_url, method: method, header: fm_head, parameter: fm_parm)
-                    let data = self.serializerResponseError(code: err.responseCode, data: rep.data)
-                    completed(false, data)
+                    let result = self.serializerResponseError(code: err.responseCode, data: rep.data)
+                    completed(.init(state: .failure, responseDataSerializerResult: result))
                 }
             }
         }
