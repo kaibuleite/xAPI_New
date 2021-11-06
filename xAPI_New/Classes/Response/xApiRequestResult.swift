@@ -9,6 +9,7 @@ import UIKit
 
 public class xApiRequestResult: NSObject {
     
+    // MARK: - Enum
     /// API请求状态
     public enum xApiRequestState {
         /// 成功
@@ -17,11 +18,13 @@ public class xApiRequestResult: NSObject {
         case failure
     }
     
+    // MARK: - Public Property
     /// API请求状态
     public var state = xApiRequestState.success
     /// 解析结果
     public var responseDataSerializerResult : xApiResponseDataSerializerResult?
-
+    
+    // MARK: - Func
     /// 实例化
     public init(state : xApiRequestState,
                 responseDataSerializerResult : xApiResponseDataSerializerResult? = nil)

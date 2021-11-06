@@ -9,6 +9,7 @@ import UIKit
 
 public class xApiResponseDataSerializerResult: NSObject {
     
+    // MARK: - Enum
     /// API响应数据解析状态
     public enum xApiResponseDataSerializerState {
         /// 成功
@@ -17,13 +18,30 @@ public class xApiResponseDataSerializerResult: NSObject {
         case failure
     }
     
-    /// API请求状态
+    /// API响应数据解析结果
+    public enum xApiResponseDataCodeState {
+        /// 正常
+        case normal
+        /// 出错
+        case error
+    }
+    
+    // MARK: - Public Property
+    /// API响应数据解析状态
     public var state = xApiResponseDataSerializerState.success
+    /// API响应状态码
+    public var code = xApiResponseDataCodeState.normal
+    /// 提示信息
+    public var msg = ""
+    /// 时间戳
+    public var timestamp = ""
     /// 解析结果
     public var data : Any? 
-
+    
+    // MARK: - Func
     /// 实例化
     public init(state : xApiResponseDataSerializerState,
+                code : xApiResponseDataCodeState = .normal,
                 data : Any? = nil)
     {
         self.state = state
