@@ -82,7 +82,7 @@ open class xAPI: NSObject {
     /// 上传取消回调(返回中断数据)
     public typealias xHandlerApiUploadCancel = (Data?) -> Void
     /// 上传完成回调
-    public typealias xHandlerApiUploadCompleted = (Bool, Any?) -> Void
+    public typealias xHandlerApiUploadCompleted = (xApiRequestResult) -> Void
     
     // MARK: - 下载回调
     /// 下载进度回调(当前下载量，总数据量，下载进度)
@@ -90,7 +90,7 @@ open class xAPI: NSObject {
     /// 下载取消回调(返回中断数据)
     public typealias xHandlerApiDownloadCancel = (Data?) -> Void
     /// 下载完成回调
-    public typealias xHandlerApiDownloadCompleted = (Bool, Any?) -> Void
+    public typealias xHandlerApiDownloadCompleted = (xApiRequestResult) -> Void
     
     // MARK: - 格式化请求参数（可重写）
     /// 格式化URL前缀

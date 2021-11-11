@@ -64,12 +64,14 @@ extension xAPI {
             (rep) in
             switch rep.result {
             case let .success(obj):
-                completed(true, obj)
+                let result = self.serializerResponse(data: obj)
+                completed(.init(state: .success, responseDataSerializerResult: result))
                 
             case let .failure(err):
                 self.logRequestError(err)
                 self.logRequestInfo(url: fm_url, method: method, header: fm_head, parameter: fm_parm)
-                completed(false, nil)
+                let result = self.serializerResponseError(code: err.responseCode, data: rep.resumeData)
+                completed(.init(state: .failure, responseDataSerializerResult: result))
             }
         }
         return request
@@ -122,11 +124,13 @@ extension xAPI {
             (rep) in
             switch rep.result {
             case let .success(obj):
-                completed(true, obj)
+                let result = self.serializerResponse(data: obj)
+                completed(.init(state: .success, responseDataSerializerResult: result))
                 
             case let .failure(err):
                 self.logRequestError(err)
-                completed(false, nil)
+                let result = self.serializerResponseError(code: err.responseCode, data: rep.resumeData)
+                completed(.init(state: .failure, responseDataSerializerResult: result))
             }
         }
         return req
