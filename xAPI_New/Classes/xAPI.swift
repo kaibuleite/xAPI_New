@@ -111,15 +111,15 @@ open class xAPI: NSObject {
         return ret
     }
     /// 格式化Api头部参数
-    open class func formatterRequest(header: [String : String]?) -> [String : String]
+    open class func formatterRequest(headers: [String : String]?) -> [String : String]
     {
-        let head = header ?? [String : String]()
+        let head = headers ?? [String : String]()
         return head
     }
     /// 格式化Api请求参数
-    open class func formatterRequest(parameter : [String : Any]?) -> [String : Any]
+    open class func formatterRequest(parameters : [String : Any]?) -> [String : Any]
     {
-        let parm = parameter ?? [String : Any]()
+        let parm = parameters ?? [String : Any]()
         return parm
     }
     /// 格式化Api数据摘要

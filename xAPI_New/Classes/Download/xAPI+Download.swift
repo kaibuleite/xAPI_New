@@ -14,8 +14,9 @@ extension xAPI {
     /// - Parameters:
     ///   - urlStr: 请求地址
     ///   - method: 请求方式
-    ///   - header: 头部
-    ///   - parameter: 参数
+    ///   - headers: 头部
+    ///   - parameters: 参数
+    ///   - encoding: 参数编码类型，默认URL，或者可以切换为JSON
     ///   - queue: 消息队列
     ///   - progress: 下载进度
     ///   - completed: 完成回调
@@ -23,16 +24,17 @@ extension xAPI {
     @discardableResult
     public static func download(urlStr : String,
                                 method : HTTPMethod,
-                                header : [String : String]?,
-                                parameter : [String : Any]?,
+                                headers : [String : String]?,
+                                parameters : [String : Any]?,
+                                encoding: ParameterEncoding = URLEncoding.default,
                                 queue : DispatchQueue = .main,
                                 progress : @escaping xHandlerApiDownloadProgress,
                                 completed : @escaping xHandlerApiDownloadCompleted) -> DownloadRequest
     {
         // 格式化请求数据
         var fm_url = self.formatterRequest(url: urlStr)
-        var fm_parm = self.formatterRequest(parameter: parameter)
-        let fm_head = self.formatterRequest(header: header)
+        var fm_parm = self.formatterRequest(parameters: parameters)
+        let fm_head = self.formatterRequest(headers: headers)
         var ht_headers = HTTPHeaders()
         for key in fm_head.keys {
             guard let value = fm_head[key] else { continue }
@@ -51,7 +53,7 @@ extension xAPI {
         }
         
         // 创建请求体
-        let request = AF.download(fm_url, method: method, parameters: fm_parm, headers: ht_headers) 
+        let request = AF.download(fm_url, method: method, parameters: fm_parm, encoding: encoding, headers: ht_headers) 
         // 开始下载
         request.downloadProgress(queue: queue) {
             (pro) in

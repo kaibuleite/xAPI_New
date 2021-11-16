@@ -14,23 +14,25 @@ extension xAPI {
     /// - Parameters:
     ///   - urlStr: 请求地址
     ///   - method: 请求方式
-    ///   - header: 头部
-    ///   - parameter: 参数
+    ///   - headers: 头部
+    ///   - parameters: 参数
+    ///   - encoding: 参数编码类型，默认URL，或者可以切换为JSON
     ///   - queue: 消息队列
     ///   - repDataSerializer: 响应结果解析类型，默认解析为JSON格式
     ///   - completed: 完成回调
     public static func req(urlStr : String,
                            method : HTTPMethod,
-                           header : [String : String]?,
-                           parameter : [String : Any]?,
+                           headers : [String : String]?,
+                           parameters : [String : Any]?,
+                           encoding: ParameterEncoding = URLEncoding.default,
                            queue : DispatchQueue = .main,
                            repDataSerializer : ResponseDataSerializerType = .json,
                            completed : @escaping xHandlerApiReqCompleted)
     {
         // 格式化请求数据
         var fm_url = self.formatterRequest(url: urlStr)
-        var fm_parm = self.formatterRequest(parameter: parameter)
-        let fm_head = self.formatterRequest(header: header)
+        var fm_parm = self.formatterRequest(parameters: parameters)
+        let fm_head = self.formatterRequest(headers: headers)
         var ht_headers = HTTPHeaders()
         for key in fm_head.keys {
             guard let value = fm_head[key] else { continue }
@@ -49,7 +51,7 @@ extension xAPI {
         }
         
         // 创建请求体
-        let request = AF.request(fm_url, method: method, parameters: fm_parm, headers: ht_headers)
+        let request = AF.request(fm_url, method: method, parameters: fm_parm, encoding: encoding, headers: ht_headers)
         // 发起请求
         switch repDataSerializer {
         case .data:
@@ -104,75 +106,111 @@ extension xAPI {
     /// GET请求
     /// - Parameters:
     ///   - urlStr: 请求地址
-    ///   - header: 头部
-    ///   - parameter: 参数
+    ///   - headers: 头部
+    ///   - parameters: 参数
+    ///   - encoding: 参数编码类型，默认URL，或者可以切换为JSON
     ///   - queue: 消息队列
     ///   - repDataSerializer: 响应结果解析类型，默认解析为JSON格式
     ///   - completed: 完成回调
     public static func get(urlStr : String,
-                           header : [String : String]?,
-                           parameter : [String : Any]?,
+                           headers : [String : String]?,
+                           parameters : [String : Any]?,
+                           encoding: ParameterEncoding = URLEncoding.default,
                            queue : DispatchQueue = .main,
                            repDataSerializer : ResponseDataSerializerType = .json,
                            completed : @escaping xHandlerApiReqCompleted)
     {
-        self.req(urlStr: urlStr, method: .get, header: header, parameter: parameter, queue: queue, repDataSerializer: repDataSerializer, completed: completed)
+        self.req(urlStr: urlStr,
+                 method: .get,
+                 headers: headers,
+                 parameters: parameters,
+                 encoding: encoding,
+                 queue: queue,
+                 repDataSerializer: repDataSerializer,
+                 completed: completed)
     }
     
     // MARK: - POS请求
     /// POS请求
     /// - Parameters:
     ///   - urlStr: 请求地址
-    ///   - header: 头部
-    ///   - parameter: 参数
+    ///   - headers: 头部
+    ///   - parameters: 参数
+    ///   - encoding: 参数编码类型，默认URL，或者可以切换为JSON
     ///   - queue: 消息队列
     ///   - repDataSerializer: 响应结果解析类型，默认解析为JSON格式
     ///   - completed: 完成回调
     public static func post(urlStr : String,
-                            header : [String : String]?,
-                            parameter : [String : Any]?,
+                            headers : [String : String]?,
+                            parameters : [String : Any]?,
+                            encoding: ParameterEncoding = URLEncoding.default,
                             queue : DispatchQueue = .main,
                             repDataSerializer : ResponseDataSerializerType = .json,
                             completed : @escaping xHandlerApiReqCompleted)
     {
-        self.req(urlStr: urlStr, method: .post, header: header, parameter: parameter, queue: queue, repDataSerializer: repDataSerializer, completed: completed)
+        self.req(urlStr: urlStr,
+                 method: .post,
+                 headers: headers,
+                 parameters: parameters,
+                 encoding: encoding,
+                 queue: queue,
+                 repDataSerializer: repDataSerializer,
+                 completed: completed)
     }
     
     // MARK: - PUT请求
     /// PUT请求
     /// - Parameters:
     ///   - urlStr: 请求地址
-    ///   - header: 头部
-    ///   - parameter: 参数
+    ///   - headers: 头部
+    ///   - parameters: 参数
+    ///   - encoding: 参数编码类型，默认URL，或者可以切换为JSON
     ///   - queue: 消息队列
     ///   - repDataSerializer: 响应结果解析类型，默认解析为JSON格式
     ///   - completed: 完成回调
     public static func put(urlStr : String,
-                           header : [String : String]?,
-                           parameter : [String : Any]?,
+                           headers : [String : String]?,
+                           parameters : [String : Any]?,
+                           encoding: ParameterEncoding = URLEncoding.default,
                            queue : DispatchQueue = .main,
                            repDataSerializer : ResponseDataSerializerType = .json,
                            completed : @escaping xHandlerApiReqCompleted)
     {
-        self.req(urlStr: urlStr, method: .put, header: header, parameter: parameter, queue: queue, repDataSerializer: repDataSerializer, completed: completed)
+        self.req(urlStr: urlStr,
+              method: .put,
+              headers: headers,
+              parameters: parameters,
+              encoding: encoding,
+              queue: queue,
+              repDataSerializer: repDataSerializer,
+              completed: completed)
     }
     
     // MARK: - Delete请求
     /// Delete请求
     /// - Parameters:
     ///   - urlStr: 请求地址
-    ///   - header: 头部
-    ///   - parameter: 参数
+    ///   - headers: 头部
+    ///   - parameters: 参数
+    ///   - encoding: 参数编码类型，默认URL，或者可以切换为JSON
     ///   - queue: 消息队列
     ///   - repDataSerializer: 响应结果解析类型，默认解析为JSON格式
     ///   - completed: 完成回调
     public static func delete(urlStr : String,
-                              header : [String : String]?,
-                              parameter : [String : Any]?,
+                              headers : [String : String]?,
+                              parameters : [String : Any]?,
+                              encoding: ParameterEncoding = URLEncoding.default,
                               repDataSerializer : ResponseDataSerializerType = .json,
                               queue : DispatchQueue = .main,
                               completed : @escaping xHandlerApiReqCompleted)
     {
-        self.req(urlStr: urlStr, method: .delete, header: header, parameter: parameter, queue: queue, repDataSerializer: repDataSerializer, completed: completed)
+        self.req(urlStr: urlStr,
+              method: .delete,
+              headers: headers,
+              parameters: parameters,
+              encoding: encoding,
+              queue: queue,
+              repDataSerializer: repDataSerializer,
+              completed: completed)
     }
 }

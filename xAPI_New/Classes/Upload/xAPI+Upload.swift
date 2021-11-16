@@ -13,9 +13,14 @@ extension xAPI {
     /// 上传文件
     /// - Parameters:
     ///   - urlStr: 请求地址
+    ///   - fileData: 文件
+    ///   - fileKey: 文件标识
+    ///   - fileName: 文件名称
+    ///   - fileType: 文件类型
     ///   - method: 请求方式
-    ///   - header: 头部
-    ///   - parameter: 参数
+    ///   - headers: 头部
+    ///   - parameters: 参数
+    ///   - encoding: 参数编码类型，默认URL，或者可以切换为JSON
     ///   - queue: 消息队列
     ///   - repDataSerializer: 响应结果解析类型，默认解析为JSON格式
     ///   - progress: 下载进度(已完成，总量)
@@ -28,8 +33,9 @@ extension xAPI {
                               fileName : String,
                               fileType : xUploadFileType,
                               method : HTTPMethod,
-                              header : [String : String]?,
-                              parameter : [String : Any]?,
+                              headers : [String : String]?,
+                              parameters : [String : Any]?,
+                              encoding: ParameterEncoding = URLEncoding.default,
                               queue : DispatchQueue = .main,
                               repDataSerializer : ResponseDataSerializerType = .json,
                               progress : @escaping xHandlerApiUploadProgress,
@@ -37,8 +43,8 @@ extension xAPI {
     {
         // 格式化请求数据
         var fm_url = self.formatterRequest(url: urlStr)
-        var fm_parm = self.formatterRequest(parameter: parameter)
-        let fm_head = self.formatterRequest(header: header)
+        var fm_parm = self.formatterRequest(parameters: parameters)
+        let fm_head = self.formatterRequest(headers: headers)
         var ht_headers = HTTPHeaders()
         for key in fm_head.keys {
             guard let value = fm_head[key] else { continue }

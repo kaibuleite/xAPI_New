@@ -17,13 +17,13 @@ class API: xAPI_New.xAPI {
         return "https://mingdev.fudouzhongkang.com/api/"
     }
     // 添加公共头部（如时间戳）
-    override class func formatterRequest(header: [String : String]?) -> [String : String] {
-        let obj = super.formatterRequest(header: header)
+    override class func formatterRequest(headers: [String : String]?) -> [String : String] {
+        let obj = super.formatterRequest(headers: headers)
         return obj
     }
     // 添加公共参数（如用户Token）
-    override class func formatterRequest(parameter: [String : Any]?) -> [String : Any] {
-        let obj = super.formatterRequest(parameter: parameter)
+    override class func formatterRequest(parameters: [String : Any]?) -> [String : Any] {
+        let obj = super.formatterRequest(parameters: parameters)
         return obj
     }
     // 签名
@@ -57,7 +57,7 @@ class API: xAPI_New.xAPI {
     {
         var parameter = [String : String]()
         parameter["page"] = "1"
-        self.post(urlStr: "goods/category_list", header: nil, parameter: parameter) {
+        self.post(urlStr: "goods/category_list", headers: nil, parameters: parameter) {
             (result) in
             // isSuccess表示接口响应结果，失败不一定没数据，推荐用实际的Data来判断接口是否成功
             if let info = result.responseDataSerializerResult?.data as? [String : Any] {
