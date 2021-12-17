@@ -53,7 +53,10 @@ extension xAPI {
         }
         
         // 创建请求体
-        let request = AF.download(fm_url, method: method, parameters: fm_parm, encoding: encoding, headers: ht_headers) 
+        let request = AF.download(fm_url, method: method, parameters: fm_parm, encoding: encoding, headers: ht_headers) {
+            (req) in
+            req.timeoutInterval = xAPI.getDownloadTimeoutDuration() // 配置超时时长
+        }
         // 开始下载
         request.downloadProgress(queue: queue) {
             (pro) in

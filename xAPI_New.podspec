@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'xAPI_New'
-  s.version          = '1.0.6'
+  s.version          = '1.0.7'
   s.summary          = 'A short description of xAPI_New.'
   s.swift_version    = '5'      # Swift版本号
 

@@ -51,7 +51,10 @@ extension xAPI {
         }
         
         // 创建请求体
-        let request = AF.request(fm_url, method: method, parameters: fm_parm, encoding: encoding, headers: ht_headers)
+        let request = AF.request(fm_url, method: method, parameters: fm_parm, encoding: encoding, headers: ht_headers) {
+            (req) in
+            req.timeoutInterval = xAPI.getRequestTimeoutDuration() // 配置超时时长
+        }
         // 发起请求
         switch repDataSerializer {
         case .data:

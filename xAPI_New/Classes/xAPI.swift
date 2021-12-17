@@ -92,6 +92,20 @@ open class xAPI: NSObject {
     /// 下载完成回调
     public typealias xHandlerApiDownloadCompleted = (xApiRequestResult) -> Void
     
+    // MARK: - 超时时长（可重写）
+    /// 请求超时时长(默认60s)
+    open class func getRequestTimeoutDuration() -> TimeInterval {
+        return 60
+    }
+    /// 上传超时时长(默认60s)
+    open class func getUploadTimeoutDuration() -> TimeInterval {
+        return 60
+    }
+    /// 下载超时时长(默认60s)
+    open class func getDownloadTimeoutDuration() -> TimeInterval {
+        return 60
+    }
+    
     // MARK: - 格式化请求参数（可重写）
     /// 格式化URL前缀
     open class func formatterUrlPrefix() -> String
