@@ -80,7 +80,7 @@ extension xAPI {
         }, to: fm_url, method: method, headers: ht_headers) {
             (req) in
             req.timeoutInterval = xAPI.getUploadTimeoutDuration() // 配置超时时长
-        }
+        }.validate()
         // 上传进度
         request.uploadProgress(queue: queue, closure: {
             (pro) in 

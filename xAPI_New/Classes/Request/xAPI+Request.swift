@@ -1,5 +1,5 @@
 //
-//  API+Request.swift
+//  xAPI+Request.swift
 //  xAPI_New
 //
 //  Created by Mac on 2021/8/27.
@@ -54,7 +54,7 @@ extension xAPI {
         let request = AF.request(fm_url, method: method, parameters: fm_parm, encoding: encoding, headers: ht_headers) {
             (req) in
             req.timeoutInterval = xAPI.getRequestTimeoutDuration() // 配置超时时长
-        }
+        }.validate()
         // 发起请求
         switch repDataSerializer {
         case .data:

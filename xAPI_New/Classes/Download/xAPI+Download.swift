@@ -56,7 +56,7 @@ extension xAPI {
         let request = AF.download(fm_url, method: method, parameters: fm_parm, encoding: encoding, headers: ht_headers) {
             (req) in
             req.timeoutInterval = xAPI.getDownloadTimeoutDuration() // 配置超时时长
-        }
+        }.validate()
         // 开始下载
         request.downloadProgress(queue: queue) {
             (pro) in
