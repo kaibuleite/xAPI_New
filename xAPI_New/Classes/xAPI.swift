@@ -11,17 +11,6 @@ import xExtension
 // MARK: - xAPI
 open class xAPI: NSObject {
     
-    // MARK: - 响应结果解析类型
-    /// 响应结果解析类型
-    public enum ResponseDataSerializerType {
-        /// 解析为Data
-        case data
-        /// 解析为String
-        case string
-        /// 解析为JSON
-        case json
-    }
-    
     // MARK: - 上传文件类型枚举
     /// 上传文件类型枚举
     public enum xUploadFileType {
@@ -74,23 +63,23 @@ open class xAPI: NSObject {
     
     // MARK: - 请求回调
     /// 请求完成回调
-    public typealias xHandlerApiReqCompleted = (xApiRequestResult) -> Void
+    public typealias xHandlerRequestCompleted = (xResponseResult) -> Void
     
     // MARK: - 上传回调
     /// 上传进度回调(当前下载量，总数据量，下载进度)
-    public typealias xHandlerApiUploadProgress = (Int64, Int64, Double) -> Void
+    public typealias xHandlerUploadProgress = (Int64, Int64, Double) -> Void
     /// 上传取消回调(返回中断数据)
-    public typealias xHandlerApiUploadCancel = (Data?) -> Void
+    public typealias xHandlerUploadCancel = (Data?) -> Void
     /// 上传完成回调
-    public typealias xHandlerApiUploadCompleted = (xApiRequestResult) -> Void
+    public typealias xHandlerUploadCompleted = (xResponseResult) -> Void
     
     // MARK: - 下载回调
     /// 下载进度回调(当前下载量，总数据量，下载进度)
-    public typealias xHandlerApiDownloadProgress = (Int64, Int64, Double) -> Void
+    public typealias xHandlerDownloadProgress = (Int64, Int64, Double) -> Void
     /// 下载取消回调(返回中断数据)
-    public typealias xHandlerApiDownloadCancel = (Data?) -> Void
+    public typealias xHandlerDownloadCancel = (Data?) -> Void
     /// 下载完成回调
-    public typealias xHandlerApiDownloadCompleted = (xApiRequestResult) -> Void
+    public typealias xHandlerDownloadCompleted = (xResponseResult) -> Void
     
     // MARK: - 超时时长（可重写）
     /// 请求超时时长(默认60s)
@@ -150,25 +139,41 @@ open class xAPI: NSObject {
      
     
     // MARK: - 解析响应数据（可重写）
-    // 解析成功数据
-    open class func serializerResponse(data: Data) -> xApiResponseDataSerializerResult {
+    /// 解析响应数据
+    /// - Parameter data: 要解析的数据
+    /// - Returns: 解析结果
+    open class func analyzingResponse(data: Data) -> xResponseResult
+    {
+        let ret = xResponseResult()
         // 尝试解析成JSON
-        let json = try? JSONSerialization.jsonObject(with: data, options: .mutableContainers)
-        return .init(state: .success, data: json)
-    }
-    open class func serializerResponse(string: String) -> xApiResponseDataSerializerResult {
-        return .init(state: .success, data: string)
-    }
-    open class func serializerResponse(json: Any) -> xApiResponseDataSerializerResult {
-        return .init(state: .success, data: json)
-    }
-    // 解析失败数据
-    open class func serializerResponseError(code : Int?, data: Data?) -> xApiResponseDataSerializerResult {
-        // 尝试解析成JSON
-        guard let obj = data else {
-            return .init(state: .failure, data: data)
+        if let json = try? JSONSerialization.jsonObject(with: data, options: .mutableContainers) {
+            ret.repDataAnalyzingState = .success
+            ret.serverReturnData = json
+        } else {
+            ret.repDataAnalyzingState = .failure
+            ret.serverReturnData = nil
         }
-        let json = try? JSONSerialization.jsonObject(with: obj, options: .mutableContainers)
-        return .init(state: .success, data: json)
+        // 服务器返回的数据状态在子类里判断
+        ret.serverReturnDataState = .normal
+//        ret.timestamp = ""
+//        ret.tipMessage = ""
+        return ret
+    }
+    /// 解析失败数据
+    /// - Parameters:
+    ///   - code: 错误码
+    ///   - data: 失败内容
+    /// - Returns: 解析结果
+    open class func analyzingResponseFailure(code : Int?,
+                                             data: Data?) -> xResponseResult
+    {
+        let ret = xResponseResult()
+        guard let obj = data else {
+            ret.repDataAnalyzingState = .failure
+            ret.serverReturnData = nil
+            return ret
+        }
+        // 尝试解析成JSON
+        return self.analyzingResponse(data: obj) 
     }
 }

@@ -1,6 +1,6 @@
 PODS:
   - Alamofire (5.5.0)
-  - xAPI_New (1.0.8):
+  - xAPI_New (1.1.0):
     - Alamofire
     - xExtension
   - xDefine (1.0.4)
@@ -23,7 +23,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Alamofire: 1c4fb5369c3fe93d2857c780d8bbe09f06f97e7c
-  xAPI_New: d18955f051ddd2b5122bd5d4c3a1c34940d7768a
+  xAPI_New: e59ab48962953aed16913ac3d98f22df2f427bc3
   xDefine: ca6c6eef825544db8b43409e66dbff05eca7ac58
   xExtension: 70d1f6b92b268f1e36236f8be26ed86c72628a0b
 

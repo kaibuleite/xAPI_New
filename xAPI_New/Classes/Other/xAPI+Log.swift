@@ -32,12 +32,27 @@ extension xAPI {
         print("URL:\(url)")
         print("Method:\(method)")
         print("Header:\(self.formatterPostString(of: header))")
-        switch method {
-        case .get:
-            print("GET:\(self.formatterGetString(of: parameter))")
-        default:
-            print("POST:\(self.formatterPostString(of: parameter))")
-        }
+        print("GET Parameter:\(self.formatterGetString(of: parameter))")
+        print("POST Parameter:\(self.formatterPostString(of: parameter))")
     }
     
+}
+
+extension Dictionary {
+    
+    // MARK: - 按顺序打印参数
+    /// 按顺序打印参数
+    public func xLogSortParameter()
+    {
+        guard let parameter = self as? [String : Any?] else {
+            print("⚠️ 格式不符合")
+            print(self)
+            return
+        }
+        let keyArr = parameter.keys.sorted()
+        for key in keyArr {
+            guard let value = parameter[key] as? String else { continue }
+            print(key, value)
+        }
+    }
 }

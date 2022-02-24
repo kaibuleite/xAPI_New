@@ -28,8 +28,8 @@ extension xAPI {
                                 parameters : [String : Any]?,
                                 encoding: ParameterEncoding = URLEncoding.default,
                                 queue : DispatchQueue = .main,
-                                progress : @escaping xHandlerApiDownloadProgress,
-                                completed : @escaping xHandlerApiDownloadCompleted) -> DownloadRequest
+                                progress : @escaping xHandlerDownloadProgress,
+                                completed : @escaping xHandlerDownloadCompleted) -> DownloadRequest
     {
         // 格式化请求数据
         var fm_url = self.formatterRequest(url: urlStr)
@@ -69,14 +69,21 @@ extension xAPI {
             (rep) in
             switch rep.result {
             case let .success(obj):
-                let result = self.serializerResponse(data: obj)
-                completed(.init(state: .success, responseDataSerializerResult: result))
+                let ret = self.analyzingResponse(data: obj)
+                ret.repState = .success
+                completed(ret)
                 
             case let .failure(err):
+                let ret = self.analyzingResponseFailure(code: err.responseCode,
+                                                        data: rep.resumeData)
+                ret.repState = .failure
+                completed(ret)
+                // 打印请示求败日志
                 self.logRequestError(err)
-                self.logRequestInfo(url: fm_url, method: method, header: fm_head, parameter: fm_parm)
-                let result = self.serializerResponseError(code: err.responseCode, data: rep.resumeData)
-                completed(.init(state: .failure, responseDataSerializerResult: result))
+                self.logRequestInfo(url: fm_url,
+                                    method: method,
+                                    header: fm_head,
+                                    parameter: fm_parm)
             }
         }
         return request
@@ -88,7 +95,7 @@ extension xAPI {
     /// - Returns: 下载对象
     @discardableResult
     public static func downloadCancel(request : DownloadRequest,
-                                      completed : @escaping xHandlerApiDownloadCancel) -> DownloadRequest
+                                      completed : @escaping xHandlerDownloadCancel) -> DownloadRequest
     {
         request.cancel {
             (data) in
@@ -110,8 +117,8 @@ extension xAPI {
     public static func downloadResuming(request : DownloadRequest,
                                         resumeData : Data?,
                                         queue : DispatchQueue = .main,
-                                        progress : @escaping xHandlerApiDownloadProgress,
-                                        completed : @escaping xHandlerApiDownloadCompleted) -> DownloadRequest
+                                        progress : @escaping xHandlerDownloadProgress,
+                                        completed : @escaping xHandlerDownloadCompleted) -> DownloadRequest
     {
         var req = request
         if let data = resumeData {
@@ -129,13 +136,17 @@ extension xAPI {
             (rep) in
             switch rep.result {
             case let .success(obj):
-                let result = self.serializerResponse(data: obj)
-                completed(.init(state: .success, responseDataSerializerResult: result))
+                let ret = self.analyzingResponse(data: obj)
+                ret.repState = .success
+                completed(ret)
                 
             case let .failure(err):
-                self.logRequestError(err)
-                let result = self.serializerResponseError(code: err.responseCode, data: rep.resumeData)
-                completed(.init(state: .failure, responseDataSerializerResult: result))
+                let ret = self.analyzingResponseFailure(code: err.responseCode,
+                                                        data: rep.resumeData)
+                ret.repState = .failure
+                completed(ret)
+                // 打印请示求败日志
+                self.logRequestError(err) 
             }
         }
         return req

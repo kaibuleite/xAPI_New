@@ -18,7 +18,6 @@ extension xAPI {
     ///   - parameters: 参数
     ///   - encoding: 参数编码类型，默认URL，或者可以切换为JSON
     ///   - queue: 消息队列
-    ///   - repDataSerializer: 响应结果解析类型，默认解析为JSON格式
     ///   - completed: 完成回调
     public static func req(urlStr : String,
                            method : HTTPMethod,
@@ -26,8 +25,7 @@ extension xAPI {
                            parameters : [String : Any]?,
                            encoding: ParameterEncoding = URLEncoding.default,
                            queue : DispatchQueue = .main,
-                           repDataSerializer : ResponseDataSerializerType = .json,
-                           completed : @escaping xHandlerApiReqCompleted)
+                           completed : @escaping xHandlerRequestCompleted)
     {
         // 格式化请求数据
         var fm_url = self.formatterRequest(url: urlStr)
@@ -56,51 +54,25 @@ extension xAPI {
             req.timeoutInterval = xAPI.getRequestTimeoutDuration() // 配置超时时长
         }.validate()
         // 发起请求
-        switch repDataSerializer {
-        case .data:
-            request.responseData(queue: queue) {
-                (rep) in
-                switch rep.result {
-                case let .success(obj):
-                    let result = self.serializerResponse(data: obj)
-                    completed(.init(state: .success, responseDataSerializerResult: result))
-                    
-                case let .failure(err):
-                    self.logRequestError(err)
-                    self.logRequestInfo(url: fm_url, method: method, header: fm_head, parameter: fm_parm)
-                    let result = self.serializerResponseError(code: err.responseCode, data: rep.data)
-                    completed(.init(state: .failure, responseDataSerializerResult: result))
-                } 
-            }
-        case .string:
-            request.responseString(queue: queue) {
-                (rep) in
-                switch rep.result {
-                case let .success(obj):
-                    let result = self.serializerResponse(string: obj)
-                    completed(.init(state: .failure, responseDataSerializerResult: result))
-                    
-                case let .failure(err):
-                    self.logRequestError(err)
-                    self.logRequestInfo(url: fm_url, method: method, header: fm_head, parameter: fm_parm)
-                    let result = self.serializerResponseError(code: err.responseCode, data: rep.data)
-                    completed(.init(state: .failure, responseDataSerializerResult: result))
-                }
-            }
-        case .json:
-            request.responseJSON(queue: queue) {
-                (rep) in
-                switch rep.result {
-                case let .success(obj):
-                    let result = self.serializerResponse(json: obj)
-                    completed(.init(state: .success, responseDataSerializerResult: result))
-                    
-                case let .failure(err):
-                    self.logRequestError(err)
-                    self.logRequestInfo(url: fm_url, method: method, header: fm_head, parameter: fm_parm)
-                    let result = self.serializerResponseError(code: err.responseCode, data: rep.data)
-                    completed(.init(state: .failure, responseDataSerializerResult: result))
-                }
+        request.responseData(queue: queue) {
+            (rep) in
+            switch rep.result {
+            case let .success(obj):
+                let ret = self.analyzingResponse(data: obj)
+                ret.repState = .success
+                completed(ret)
+                
+            case let .failure(err):
+                let ret = self.analyzingResponseFailure(code: err.responseCode,
+                                                        data: rep.data)
+                ret.repState = .failure
+                completed(ret)
+                // 打印请示求败日志
+                self.logRequestError(err)
+                self.logRequestInfo(url: fm_url,
+                                    method: method,
+                                    header: fm_head,
+                                    parameter: fm_parm)
             }
         }
     }
@@ -113,15 +85,13 @@ extension xAPI {
     ///   - parameters: 参数
     ///   - encoding: 参数编码类型，默认URL，或者可以切换为JSON
     ///   - queue: 消息队列
-    ///   - repDataSerializer: 响应结果解析类型，默认解析为JSON格式
     ///   - completed: 完成回调
     public static func get(urlStr : String,
                            headers : [String : String]?,
                            parameters : [String : Any]?,
                            encoding: ParameterEncoding = URLEncoding.default,
                            queue : DispatchQueue = .main,
-                           repDataSerializer : ResponseDataSerializerType = .json,
-                           completed : @escaping xHandlerApiReqCompleted)
+                           completed : @escaping xHandlerRequestCompleted)
     {
         self.req(urlStr: urlStr,
                  method: .get,
@@ -129,7 +99,6 @@ extension xAPI {
                  parameters: parameters,
                  encoding: encoding,
                  queue: queue,
-                 repDataSerializer: repDataSerializer,
                  completed: completed)
     }
     
@@ -141,15 +110,13 @@ extension xAPI {
     ///   - parameters: 参数
     ///   - encoding: 参数编码类型，默认URL，或者可以切换为JSON
     ///   - queue: 消息队列
-    ///   - repDataSerializer: 响应结果解析类型，默认解析为JSON格式
     ///   - completed: 完成回调
     public static func post(urlStr : String,
                             headers : [String : String]?,
                             parameters : [String : Any]?,
                             encoding: ParameterEncoding = URLEncoding.default,
                             queue : DispatchQueue = .main,
-                            repDataSerializer : ResponseDataSerializerType = .json,
-                            completed : @escaping xHandlerApiReqCompleted)
+                            completed : @escaping xHandlerRequestCompleted)
     {
         self.req(urlStr: urlStr,
                  method: .post,
@@ -157,7 +124,6 @@ extension xAPI {
                  parameters: parameters,
                  encoding: encoding,
                  queue: queue,
-                 repDataSerializer: repDataSerializer,
                  completed: completed)
     }
     
@@ -169,15 +135,13 @@ extension xAPI {
     ///   - parameters: 参数
     ///   - encoding: 参数编码类型，默认URL，或者可以切换为JSON
     ///   - queue: 消息队列
-    ///   - repDataSerializer: 响应结果解析类型，默认解析为JSON格式
     ///   - completed: 完成回调
     public static func put(urlStr : String,
                            headers : [String : String]?,
                            parameters : [String : Any]?,
                            encoding: ParameterEncoding = URLEncoding.default,
                            queue : DispatchQueue = .main,
-                           repDataSerializer : ResponseDataSerializerType = .json,
-                           completed : @escaping xHandlerApiReqCompleted)
+                           completed : @escaping xHandlerRequestCompleted)
     {
         self.req(urlStr: urlStr,
               method: .put,
@@ -185,7 +149,6 @@ extension xAPI {
               parameters: parameters,
               encoding: encoding,
               queue: queue,
-              repDataSerializer: repDataSerializer,
               completed: completed)
     }
     
@@ -197,15 +160,13 @@ extension xAPI {
     ///   - parameters: 参数
     ///   - encoding: 参数编码类型，默认URL，或者可以切换为JSON
     ///   - queue: 消息队列
-    ///   - repDataSerializer: 响应结果解析类型，默认解析为JSON格式
     ///   - completed: 完成回调
     public static func delete(urlStr : String,
                               headers : [String : String]?,
                               parameters : [String : Any]?,
                               encoding: ParameterEncoding = URLEncoding.default,
-                              repDataSerializer : ResponseDataSerializerType = .json,
                               queue : DispatchQueue = .main,
-                              completed : @escaping xHandlerApiReqCompleted)
+                              completed : @escaping xHandlerRequestCompleted)
     {
         self.req(urlStr: urlStr,
               method: .delete,
@@ -213,7 +174,6 @@ extension xAPI {
               parameters: parameters,
               encoding: encoding,
               queue: queue,
-              repDataSerializer: repDataSerializer,
               completed: completed)
     }
 }
