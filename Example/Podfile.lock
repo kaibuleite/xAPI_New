@@ -1,10 +1,10 @@
 PODS:
-  - Alamofire (5.5.0)
+  - Alamofire (5.6.1)
   - xAPI_New (1.1.0):
     - Alamofire
     - xExtension
   - xDefine (1.0.4)
-  - xExtension (1.1.1):
+  - xExtension (1.1.2):
     - xDefine
 
 DEPENDENCIES:
@@ -22,10 +22,10 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  Alamofire: 1c4fb5369c3fe93d2857c780d8bbe09f06f97e7c
+  Alamofire: 87bd8c952f9a4454320fce00d9cc3de57bcadaf5
   xAPI_New: e59ab48962953aed16913ac3d98f22df2f427bc3
   xDefine: ca6c6eef825544db8b43409e66dbff05eca7ac58
-  xExtension: 70d1f6b92b268f1e36236f8be26ed86c72628a0b
+  xExtension: c0850b5b3c3103c3e57a5be8acdd402daaf02c16
 
 PODFILE CHECKSUM: baa90110d69d10eb2e16e9e7ac05485e8ed6a224
 

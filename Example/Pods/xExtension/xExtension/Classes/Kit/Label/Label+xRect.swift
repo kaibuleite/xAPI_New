@@ -30,4 +30,25 @@ extension UILabel {
         return size
     }
 
+    // MARK: - 设置文本渐变色
+    /// 设置文本渐变色
+    /// - Parameters:
+    ///   - colors: 渐变色
+    ///   - start: 开始位置
+    ///   - end: 结束位置
+    ///   - options: 渐变配置
+    public func xSetTextGradient(colors : [UIColor],
+                                 start : CGPoint = .init(x: 0, y: 0.5),
+                                 end : CGPoint = .init(x: 1, y: 0.5),
+                                 options : CGGradientDrawingOptions = .drawsBeforeStartLocation)
+    {
+        let size = self.bounds.size
+        guard let gradientImage = UIImage.xNewGradient(colors: colors, start: start, end: end, size: size, options: options) else {
+            print("⚠️ 渐变图片创建失败")
+            return
+        }
+        // 根据图片创建颜色
+        let textGradientColor = UIColor.init(patternImage: gradientImage)
+        self.textColor = textGradientColor
+    }
 }
