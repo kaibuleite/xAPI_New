@@ -28,65 +28,28 @@ extension xAPI {
                                 parameters : [String : Any]?,
                                 encoding: ParameterEncoding = URLEncoding.default,
                                 queue : DispatchQueue = .main,
-                                progress : @escaping xHandlerDownloadProgress,
-                                completed : @escaping xHandlerDownloadCompleted) -> DownloadRequest
+                                progress : @escaping xAPI.xHandlerDownloadProgress,
+                                completed : @escaping xAPI.xHandlerRequestCompleted) -> xDownload
     {
-        // 格式化请求数据
-        var fm_url = self.formatterRequest(url: urlStr)
-        var fm_parm = self.formatterRequest(parameters: parameters)
-        let fm_head = self.formatterRequest(headers: headers)
-        var ht_headers = HTTPHeaders()
-        for key in fm_head.keys {
-            guard let value = fm_head[key] else { continue }
-            let header = HTTPHeader.init(name: key, value: value)
-            ht_headers.add(header)
-        }
+        // 格式化请求数据并保存
+        let xReq = xDownload()
+        xReq.number = xRequestNumber
+        xReq.type = .download
+        xReq.url = self.formatterRequest(url: urlStr)
+        xReq.method = method
+        xReq.headers = self.formatterRequest(headers: headers)
+        xReq.parameters = self.formatterRequest(parameters: parameters)
+        xReq.encoding = encoding
+        xReq.queue = queue
+        xReq.completed = completed
         
-        // GET请求拼接参数到URL中
-        if method == .get, fm_parm.count > 0 {
-            let getStr = self.formatterGetString(of: fm_parm)
-            fm_url = fm_url + "?" + getStr
-            // URL编码(先解码再编码，防止2次编码)
-            fm_url = fm_url.xToUrlDecodedString() ?? fm_url
-            fm_url = fm_url.xToUrlEncodedString() ?? fm_url
-            fm_parm.removeAll() // 重置参数对象
-        }
-        
-        // 创建请求体
-        let request = AF.download(fm_url, method: method, parameters: fm_parm, encoding: encoding, headers: ht_headers) {
-            (req) in
-            req.timeoutInterval = xAPI.getDownloadTimeoutDuration() // 配置超时时长
-        }.validate()
-        // 开始下载
-        request.downloadProgress(queue: queue) {
-            (pro) in
-            let cur = pro.completedUnitCount
-            let tot = pro.totalUnitCount
-            let fra = pro.fractionCompleted
-            progress(cur, tot, fra)
-            
-        }.responseData(queue: queue) {
-            (rep) in
-            switch rep.result {
-            case let .success(obj):
-                let ret = self.analyzingResponse(data: obj)
-                ret.repState = .success
-                completed(ret)
-                
-            case let .failure(err):
-                let ret = self.analyzingResponseFailure(code: err.responseCode,
-                                                        data: rep.resumeData)
-                ret.repState = .failure
-                completed(ret)
-                // 打印请示求败日志
-                self.logRequestError(err)
-                self.logRequestInfo(url: fm_url,
-                                    method: method,
-                                    header: fm_head,
-                                    parameter: fm_parm)
-            }
-        }
-        return request
+        xReq.progress = progress
+        // 发起请求
+        xRequestNumber += 1
+        xApiRequstList["\(xReq.number)"] = xReq
+        xReq.validate()
+        xReq.start()
+        return xReq
     }
     
     // MARK: - 取消下载
@@ -95,7 +58,7 @@ extension xAPI {
     /// - Returns: 下载对象
     @discardableResult
     public static func downloadCancel(request : DownloadRequest,
-                                      completed : @escaping xHandlerDownloadCancel) -> DownloadRequest
+                                      completed : @escaping xAPI.xHandlerDownloadCancel) -> DownloadRequest
     {
         request.cancel {
             (data) in
@@ -114,41 +77,20 @@ extension xAPI {
     ///   - completed: 完成回调
     /// - Returns: 下载对象
     @discardableResult
-    public static func downloadResuming(request : DownloadRequest,
+    public static func downloadResuming(request : xDownload,
                                         resumeData : Data?,
                                         queue : DispatchQueue = .main,
-                                        progress : @escaping xHandlerDownloadProgress,
-                                        completed : @escaping xHandlerDownloadCompleted) -> DownloadRequest
+                                        progress : @escaping xAPI.xHandlerDownloadProgress,
+                                        completed : @escaping xAPI.xHandlerRequestCompleted) -> xDownload
     {
-        var req = request
+        // 发起请求
         if let data = resumeData {
             // 继续下载
-            req = AF.download(resumingWith: data)
+            request.afDownloadReques = AF.download(resumingWith: data)
         }
-        req.downloadProgress(queue: queue) {
-            (pro) in
-            let cur = pro.completedUnitCount
-            let tot = pro.totalUnitCount
-            let fra = pro.fractionCompleted
-            progress(cur, tot, fra)
-            
-        }.responseData(queue: queue) {
-            (rep) in
-            switch rep.result {
-            case let .success(obj):
-                let ret = self.analyzingResponse(data: obj)
-                ret.repState = .success
-                completed(ret)
-                
-            case let .failure(err):
-                let ret = self.analyzingResponseFailure(code: err.responseCode,
-                                                        data: rep.resumeData)
-                ret.repState = .failure
-                completed(ret)
-                // 打印请示求败日志
-                self.logRequestError(err) 
-            }
-        }
-        return req
+        // 继续下载
+        xApiRequstList["\(request.number)"] = request
+        request.start()
+        return request
     }
 }

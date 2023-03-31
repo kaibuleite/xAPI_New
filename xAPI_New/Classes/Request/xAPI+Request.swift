@@ -7,6 +7,7 @@
 
 import Alamofire
 
+
 extension xAPI {
     
     // MARK: - 请求操作
@@ -21,60 +22,28 @@ extension xAPI {
     ///   - completed: 完成回调
     public static func req(urlStr : String,
                            method : HTTPMethod,
-                           headers : [String : String]?,
+                           headers : [String : String]? = nil,
                            parameters : [String : Any]?,
                            encoding: ParameterEncoding = URLEncoding.default,
                            queue : DispatchQueue = .main,
-                           completed : @escaping xHandlerRequestCompleted)
+                           completed : @escaping xAPI.xHandlerRequestCompleted)
     {
-        // 格式化请求数据
-        var fm_url = self.formatterRequest(url: urlStr)
-        var fm_parm = self.formatterRequest(parameters: parameters)
-        let fm_head = self.formatterRequest(headers: headers)
-        var ht_headers = HTTPHeaders()
-        for key in fm_head.keys {
-            guard let value = fm_head[key] else { continue }
-            let header = HTTPHeader.init(name: key, value: value)
-            ht_headers.add(header)
-        }
-        
-        // GET请求拼接参数到URL中
-        if method == .get, fm_parm.count > 0 {
-            let getStr = self.formatterGetString(of: fm_parm)
-            fm_url = fm_url + "?" + getStr
-            // URL编码(先解码再编码，防止2次编码)
-            fm_url = fm_url.xToUrlDecodedString() ?? fm_url
-            fm_url = fm_url.xToUrlEncodedString() ?? fm_url
-            fm_parm.removeAll() // 重置参数对象
-        }
-        
-        // 创建请求体
-        let request = AF.request(fm_url, method: method, parameters: fm_parm, encoding: encoding, headers: ht_headers) {
-            (req) in
-            req.timeoutInterval = xAPI.getRequestTimeoutDuration() // 配置超时时长
-        }.validate()
+        // 格式化请求数据并保存
+        let xReq = xRequest()
+        xReq.number = xRequestNumber
+        xReq.type = .normal
+        xReq.url = self.formatterRequest(url: urlStr)
+        xReq.method = method
+        xReq.headers = self.formatterRequest(headers: headers)
+        xReq.parameters = self.formatterRequest(parameters: parameters)
+        xReq.encoding = encoding
+        xReq.queue = queue
+        xReq.completed = completed
         // 发起请求
-        request.responseData(queue: queue) {
-            (rep) in
-            switch rep.result {
-            case let .success(obj):
-                let ret = self.analyzingResponse(data: obj)
-                ret.repState = .success
-                completed(ret)
-                
-            case let .failure(err):
-                let ret = self.analyzingResponseFailure(code: err.responseCode,
-                                                        data: rep.data)
-                ret.repState = .failure
-                completed(ret)
-                // 打印请示求败日志
-                self.logRequestError(err)
-                self.logRequestInfo(url: fm_url,
-                                    method: method,
-                                    header: fm_head,
-                                    parameter: fm_parm)
-            }
-        }
+        xRequestNumber += 1
+        xApiRequstList["\(xReq.number)"] = xReq
+        xReq.validate()
+        xReq.start()
     }
     
     // MARK: - GET请求
@@ -87,11 +56,11 @@ extension xAPI {
     ///   - queue: 消息队列
     ///   - completed: 完成回调
     public static func get(urlStr : String,
-                           headers : [String : String]?,
+                           headers : [String : String]? = nil,
                            parameters : [String : Any]?,
                            encoding: ParameterEncoding = URLEncoding.default,
                            queue : DispatchQueue = .main,
-                           completed : @escaping xHandlerRequestCompleted)
+                           completed : @escaping xAPI.xHandlerRequestCompleted)
     {
         self.req(urlStr: urlStr,
                  method: .get,
@@ -112,11 +81,11 @@ extension xAPI {
     ///   - queue: 消息队列
     ///   - completed: 完成回调
     public static func post(urlStr : String,
-                            headers : [String : String]?,
+                            headers : [String : String]? = nil,
                             parameters : [String : Any]?,
                             encoding: ParameterEncoding = URLEncoding.default,
                             queue : DispatchQueue = .main,
-                            completed : @escaping xHandlerRequestCompleted)
+                            completed : @escaping xAPI.xHandlerRequestCompleted)
     {
         self.req(urlStr: urlStr,
                  method: .post,
@@ -137,19 +106,19 @@ extension xAPI {
     ///   - queue: 消息队列
     ///   - completed: 完成回调
     public static func put(urlStr : String,
-                           headers : [String : String]?,
+                           headers : [String : String]? = nil,
                            parameters : [String : Any]?,
                            encoding: ParameterEncoding = URLEncoding.default,
                            queue : DispatchQueue = .main,
-                           completed : @escaping xHandlerRequestCompleted)
+                           completed : @escaping xAPI.xHandlerRequestCompleted)
     {
         self.req(urlStr: urlStr,
-              method: .put,
-              headers: headers,
-              parameters: parameters,
-              encoding: encoding,
-              queue: queue,
-              completed: completed)
+                 method: .put,
+                 headers: headers,
+                 parameters: parameters,
+                 encoding: encoding,
+                 queue: queue,
+                 completed: completed)
     }
     
     // MARK: - Delete请求
@@ -162,18 +131,18 @@ extension xAPI {
     ///   - queue: 消息队列
     ///   - completed: 完成回调
     public static func delete(urlStr : String,
-                              headers : [String : String]?,
+                              headers : [String : String]? = nil,
                               parameters : [String : Any]?,
                               encoding: ParameterEncoding = URLEncoding.default,
                               queue : DispatchQueue = .main,
-                              completed : @escaping xHandlerRequestCompleted)
+                              completed : @escaping xAPI.xHandlerRequestCompleted)
     {
         self.req(urlStr: urlStr,
-              method: .delete,
-              headers: headers,
-              parameters: parameters,
-              encoding: encoding,
-              queue: queue,
-              completed: completed)
+                 method: .delete,
+                 headers: headers,
+                 parameters: parameters,
+                 encoding: encoding,
+                 queue: queue,
+                 completed: completed)
     }
 }

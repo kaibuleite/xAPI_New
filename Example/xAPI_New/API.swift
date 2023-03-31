@@ -12,23 +12,25 @@ import xAPI_New
 class API: xAPI_New.xAPI {
 
     // MARK: - 重写请求配置
+    // 主机域名
+    override class func getHostDomainName() -> String {
+        return "devmall.fudouzhongkang.com"
+    }
     // 接口通用前缀
     override class func formatterUrlPrefix() -> String {
         return "https://devmall.fudouzhongkang.com/appapi.php?"
     }
-    // 添加公共头部（如时间戳）
-    override class func formatterRequest(headers: [String : String]?) -> [String : String]
-    {
+    // 添加公共头部（如时间戳，数据摘要）
+    override class func formatterRequest(headers: [String : String]?) -> [String : String] {
         let obj = super.formatterRequest(headers: headers)
         return obj
     }
-    // 添加公共参数（如用户Token）
-    override class func formatterRequest(parameters: [String : Any]?) -> [String : Any]
-    {
+    // 添加公共参数（如用户Token，数据摘要）
+    override class func formatterRequest(parameters: [String : Any]?) -> [String : Any] {
         let obj = super.formatterRequest(parameters: parameters)
         return obj
     }
-    // 签名
+    // 签名、数据摘要
     override class func formatterSign(url: String,
                                       header: [String : String],
                                       parameter: [String : Any]) -> String?
@@ -39,54 +41,32 @@ class API: xAPI_New.xAPI {
     
     // MARK: - 重写响应配置
     /* 一般都会解析成JSON,在解析结果里面做进一步处理 */
-    override class func analyzingResponse(data: Data) -> xResponseResult
-    {
-        let ret = super.analyzingResponse(data: data)
-        // print(ret.serverReturnData)
-        guard let info = ret.serverReturnData as? [String : Any] else {
-            ret.serverReturnDataState = .error
-            return ret
-        }
-        print(info)
-        let code = info["errorCode"] as? Int ?? 0
-        if code == 1 {
-            ret.serverReturnDataState = .normal
-        } else {
-            ret.serverReturnDataState = .error
-        }
-        if let obj = info["errorMsg"] as? String {
-            ret.tipMessage = obj
-            obj.xAlertTip()
-        }
-        let data = info["result"]
-        ret.serverReturnData = data
-        return ret
+    override class func analyzingResponse(at xRep: xResponse) {
+        super.analyzingResponse(at: xRep)
     }
-    
-    /* 考虑一些奇葩风格（Restful）下失败用 ResponseCode 导致无法按照正常流程解析 */
-    override class func analyzingResponseFailure(code: Int?,
-                                                 data: Data?) -> xResponseResult
-    {
-        let obj = super.analyzingResponseFailure(code: code, data: data)
-        // 可以判断是否网页崩溃，直接显示网页
-        return obj
+    /* 考虑一些其他接口类型（Restful）下失败用 ResponseCode 导致无法按照正常流程解析 */
+    override class func analyzingResponseFailure(at xRep: xResponse, error: AFError) {
+        super.analyzingResponseFailure(at: xRep, error: error)
+        // 可以判断是否网页崩溃，直接显示网页 
     }
-    
-    // MARK: - 测试接口
-    public static func testReq(completed : @escaping (Bool, [String : Any]) -> Void)
-    {
-        var parameter = [String : String]()
-        parameter["page"] = "1"
-        self.post(urlStr: "c=Merchantapp&a=cityList", headers: nil, parameters: parameter) {
-            (result) in
-            // 响应失败不一定没数据，推荐用服务器实际返回的Data来判断接口是否成功
-            if let info = result.serverReturnData as? [String : Any] {
-                completed(true, info)
-            } else {
-                completed(false, .init())
-            }
-        }
+    /* 常用字典类型接口数据处理*/
+    override class func getApiCode(in dict: [String : Any]) -> Int {
+        var code = 0
+        if let obj = dict["errorCode"] as? Int      { code = obj } else
+        if let obj = dict["errorCode"] as? String   { code = obj.xToInt() }
+        return code
     }
+    override class func getApiMessage(in dict: [String : Any]) -> String {
+        var msg = ""
+        if let obj = dict["errorMsg"] as? String    { msg = obj }
+        return msg
+    }
+    override class func getApiData(in dict: [String : Any]) -> Any? {
+        var data : Any?
+        if let obj = dict["result"] { data = obj }
+        return data
+    }
+
 }
 
 // MARK: - 响应数据的另一种写法(参考)

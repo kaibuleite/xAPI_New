@@ -45,12 +45,12 @@ public func xWarning(_ items: Any...,
     let terminator = "\n"  // 终止符
     for a in items {
         if i == 0 {
-            print("⚠️⚠️⚠️⚠️⚠️ ", terminator: separator)
+            print("⚠️ ", terminator: separator)
         }
         print(a, terminator: separator)
         i += 1
         if i == j {
-            print(" ⚠️⚠️⚠️⚠️⚠️", terminator: terminator)
+            print("⚠️ ", terminator: terminator)
         }
     }
 }

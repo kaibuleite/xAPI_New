@@ -31,84 +31,36 @@ extension xAPI {
                               fileKey : String,
                               fileName : String,
                               fileType : xUploadFileType,
-                              method : HTTPMethod,
-                              headers : [String : String]?,
+                              method : HTTPMethod = .post,
+                              headers : [String : String]? = nil,
                               parameters : [String : Any]?,
                               encoding: ParameterEncoding = URLEncoding.default,
                               queue : DispatchQueue = .main,
-                              progress : @escaping xHandlerUploadProgress,
-                              completed : @escaping xHandlerUploadCompleted) -> UploadRequest
+                              progress : @escaping xAPI.xHandlerUploadProgress,
+                              completed : @escaping xAPI.xHandlerRequestCompleted) -> xUpload
     {
-        // 格式化请求数据
-        var fm_url = self.formatterRequest(url: urlStr)
-        var fm_parm = self.formatterRequest(parameters: parameters)
-        let fm_head = self.formatterRequest(headers: headers)
-        var ht_headers = HTTPHeaders()
-        for key in fm_head.keys {
-            guard let value = fm_head[key] else { continue }
-            let header = HTTPHeader.init(name: key, value: value)
-            ht_headers.add(header)
-        }
+        // 格式化请求数据并保存
+        let xReq = xUpload()
+        xReq.number = xRequestNumber
+        xReq.type = .upload
+        xReq.url = self.formatterRequest(url: urlStr)
+        xReq.method = method
+        xReq.headers = self.formatterRequest(headers: headers)
+        xReq.parameters = self.formatterRequest(parameters: parameters)
+        xReq.encoding = encoding
+        xReq.queue = queue
+        xReq.completed = completed
         
-        // GET请求拼接参数到URL中
-        if method == .get, fm_parm.count > 0 {
-            let getStr = self.formatterGetString(of: fm_parm)
-            fm_url = fm_url + "?" + getStr
-            // URL编码(先解码再编码，防止2次编码)
-            fm_url = fm_url.xToUrlDecodedString() ?? fm_url
-            fm_url = fm_url.xToUrlEncodedString() ?? fm_url
-            fm_parm.removeAll() // 重置参数对象
-        }
-        
-        // 创建请求体
-        let request = AF.upload(multipartFormData: {
-            (multipartFormData) in
-            // 把参数塞到表单里(仅限字符串)
-            for (key, value) in fm_parm {
-                guard let obj = value as? String else { continue }
-                guard let data = obj.data(using: .utf8) else { continue }
-                multipartFormData.append(data, withName: key)
-            }
-            // 把文件塞到表单里
-            multipartFormData.append(fileData,
-                                     withName: fileKey,
-                                     fileName: fileName,
-                                     mimeType: fileType.mimeType)
-            
-        }, to: fm_url, method: method, headers: ht_headers) {
-            (req) in
-            req.timeoutInterval = xAPI.getUploadTimeoutDuration() // 配置超时时长
-        }.validate()
-        // 上传进度
-        request.uploadProgress(queue: queue, closure: {
-            (pro) in 
-            let cur = pro.completedUnitCount
-            let tot = pro.totalUnitCount
-            let fra = pro.fractionCompleted
-            progress(cur, tot, fra) 
-        })
+        xReq.fileData = fileData
+        xReq.fileKey = fileKey
+        xReq.fileName = fileName
+        xReq.fileType = fileType
+        xReq.progress = progress
         // 发起请求
-        request.responseData(queue: queue) {
-            (rep) in
-            switch rep.result {
-            case let .success(obj):
-                let ret = self.analyzingResponse(data: obj)
-                ret.repState = .success
-                completed(ret)
-                
-            case let .failure(err):
-                let ret = self.analyzingResponseFailure(code: err.responseCode,
-                                                        data: rep.data)
-                ret.repState = .failure
-                completed(ret)
-                // 打印请示求败日志
-                self.logRequestError(err)
-                self.logRequestInfo(url: fm_url,
-                                    method: method,
-                                    header: fm_head,
-                                    parameter: fm_parm)
-            }
-        }
-        return request
+        xRequestNumber += 1
+        xApiRequstList["\(xReq.number)"] = xReq
+        xReq.validate()
+        xReq.start()
+        return xReq
     }
 }

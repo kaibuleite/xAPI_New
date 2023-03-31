@@ -19,7 +19,7 @@ extension UIImage {
     /// - Parameters:
     ///   - img: 图片
     ///   - handler: 完成回调
-    public func xSavePNGToAlbum(completed : @escaping xHandlerSaveImage)
+    public func xSavePNGToAlbum(completed : @escaping UIImage.xHandlerSaveImage)
     {
         let data = self.pngData()
         self.xSaveImageToAlbum(data, completed: completed)
@@ -30,7 +30,7 @@ extension UIImage {
     ///   - quality: 质量
     ///   - handler: 完成回调
     public func xSaveJPGToAlbum(quality : CGFloat = 1,
-                                completed : @escaping xHandlerSaveImage)
+                                completed : @escaping UIImage.xHandlerSaveImage)
     {
         let data = self.jpegData(compressionQuality: quality)
         self.xSaveImageToAlbum(data, completed: completed)
@@ -41,7 +41,7 @@ extension UIImage {
     ///   - img: 图片数据
     ///   - handler: 完成回调
     public func xSaveImageToAlbum(_ imgData : Data?,
-                                  completed : @escaping xHandlerSaveImage)
+                                  completed : @escaping UIImage.xHandlerSaveImage)
     {
         let status = PHPhotoLibrary.authorizationStatus()
         guard status == .authorized else {

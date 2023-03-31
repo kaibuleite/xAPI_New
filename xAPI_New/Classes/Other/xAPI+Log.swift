@@ -11,7 +11,7 @@ extension xAPI {
     
     // MARK: - 打印出错内容
     /// 打印出错内容
-    public static func logRequestError(_ err : AFError)
+    public static func logResponseError(_ err : AFError)
     {
         print("⚠️ API 响应数据验证失败")
         print("**************************************")
@@ -23,36 +23,15 @@ extension xAPI {
         print("Error Content = \(err.localizedDescription)")
     }
     /// 打印请求信息
-    public static func logRequestInfo(url : String,
-                                      method : HTTPMethod,
-                                      header : [String : String]?,
-                                      parameter : [String : Any]?)
+    public static func logRequestInfo(_ req : xRequest)
     {
         print("—————————————————")
-        print("URL:\(url)")
-        print("Method:\(method)")
-        print("Header:\(self.formatterPostString(of: header))")
-        print("GET Parameter:\(self.formatterGetString(of: parameter))")
-        print("POST Parameter:\(self.formatterPostString(of: parameter))")
+        print("Number:\(req.number)")
+        print("URL:\(req.url)")
+        print("Method:\(req.method)")
+        print("Header:\(self.formatterPostString(of: req.headers))")
+        print("GET Parameter:\(self.formatterGetString(of: req.parameters))")
+        print("POST Parameter:\(self.formatterPostString(of: req.parameters))")
     }
     
-}
-
-extension Dictionary {
-    
-    // MARK: - 按顺序打印参数
-    /// 按顺序打印参数
-    public func xLogSortParameter()
-    {
-        guard let parameter = self as? [String : Any?] else {
-            print("⚠️ 格式不符合")
-            print(self)
-            return
-        }
-        let keyArr = parameter.keys.sorted()
-        for key in keyArr {
-            guard let value = parameter[key] as? String else { continue }
-            print(key, value)
-        }
-    }
 }

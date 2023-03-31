@@ -1,10 +1,10 @@
 PODS:
-  - Alamofire (5.6.1)
-  - xAPI_New (1.1.0):
+  - Alamofire (5.6.4)
+  - xAPI_New (1.1.2):
     - Alamofire
     - xExtension
-  - xDefine (1.0.4)
-  - xExtension (1.1.2):
+  - xDefine (1.0.6)
+  - xExtension (1.1.6):
     - xDefine
 
 DEPENDENCIES:
@@ -22,11 +22,11 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  Alamofire: 87bd8c952f9a4454320fce00d9cc3de57bcadaf5
-  xAPI_New: e59ab48962953aed16913ac3d98f22df2f427bc3
-  xDefine: ca6c6eef825544db8b43409e66dbff05eca7ac58
-  xExtension: c0850b5b3c3103c3e57a5be8acdd402daaf02c16
+  Alamofire: 4e95d97098eacb88856099c4fc79b526a299e48c
+  xAPI_New: b9356116aaa2d3472c132eef461d3a3e4d6332bd
+  xDefine: 74915e20fdc2bb56dc50e981684d532baa7200ab
+  xExtension: ad23e756488b0b352b253626375ec6a77459538b
 
-PODFILE CHECKSUM: baa90110d69d10eb2e16e9e7ac05485e8ed6a224
+PODFILE CHECKSUM: cb1591964fd8a702aa08581a93345dfb29a63643
 
-COCOAPODS: 1.9.1
+COCOAPODS: 1.11.3
