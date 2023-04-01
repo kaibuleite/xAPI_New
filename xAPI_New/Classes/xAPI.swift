@@ -87,15 +87,15 @@ open class xAPI: NSObject {
         return "主机域名，例如baidu.com"
     }
     /// 请求超时时长(默认60s)
-    open class func getRequestTimeoutDuration() -> TimeInterval {
+    open class func getRequestTimeoutInterval() -> TimeInterval {
         return 60
     }
     /// 上传超时时长(默认60s)
-    open class func getUploadTimeoutDuration() -> TimeInterval {
+    open class func getUploadTimeoutInterval() -> TimeInterval {
         return 60
     }
     /// 下载超时时长(默认60s)
-    open class func getDownloadTimeoutDuration() -> TimeInterval {
+    open class func getDownloadTimeoutInterval() -> TimeInterval {
         return 60
     }
     

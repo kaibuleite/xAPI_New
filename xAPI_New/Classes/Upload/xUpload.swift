@@ -54,7 +54,7 @@ public class xUpload: xRequest {
         }, to: self.url, method: self.method, headers: headers) {
             (req) in
             // 配置超时时长
-            req.timeoutInterval = xAPI.getUploadTimeoutDuration()
+            req.timeoutInterval = xAPI.getUploadTimeoutInterval()
         }
         // 上传进度
         req.uploadProgress(queue: self.queue) {
@@ -69,7 +69,7 @@ public class xUpload: xRequest {
     
     // MARK: - 发送请求
     /// 发送请求
-    public override func start() {
+    public override func send() {
         self.afUploadReques.responseData(queue: self.queue) {
             [weak self] (rep) in
             guard let self = self else { return }

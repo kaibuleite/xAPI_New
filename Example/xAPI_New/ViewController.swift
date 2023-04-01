@@ -32,7 +32,7 @@ class ViewController: UIViewController {
             let alert = UIAlertController.init(title: "请求失败", message: "是否重新请求", preferredStyle: .alert)
             let sure = UIAlertAction.init(title: "确定", style: .default) {
                  (sender) in
-                rep.request.start()
+                rep.request.send()
             }
             let cancel = UIAlertAction.init(title: "取消", style: .cancel)
             alert.addAction(sure)

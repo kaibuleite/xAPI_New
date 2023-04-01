@@ -56,7 +56,7 @@ public class xRequest: NSObject {
         let req = AF.request(self.url, method: self.method, parameters: self.parameters, encoding: self.encoding, headers: headers) {
             (req) in
             // 配置超时时长
-            req.timeoutInterval = xAPI.getRequestTimeoutDuration()
+            req.timeoutInterval = xAPI.getRequestTimeoutInterval()
         }
         return req.validate()
     }()
@@ -98,7 +98,7 @@ public class xRequest: NSObject {
     
     // MARK: - 发送请求
     /// 发送请求
-    open func start()
+    open func send()
     {
         self.afRequest.responseData(queue: self.queue) {
             [weak self] (rep) in

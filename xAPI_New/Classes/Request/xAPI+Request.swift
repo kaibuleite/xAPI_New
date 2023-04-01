@@ -43,7 +43,7 @@ extension xAPI {
         xRequestNumber += 1
         xApiRequstList["\(xReq.number)"] = xReq
         xReq.validate()
-        xReq.start()
+        xReq.send()
     }
     
     // MARK: - GET请求

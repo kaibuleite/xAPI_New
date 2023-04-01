@@ -32,7 +32,7 @@ public class xDownload: xRequest {
         let req = AF.download(self.url, method: self.method, parameters: self.parameters, encoding: self.encoding, headers: headers) {
             (req) in
             // 配置超时时长
-            req.timeoutInterval = xAPI.getDownloadTimeoutDuration()
+            req.timeoutInterval = xAPI.getDownloadTimeoutInterval()
         }
         // 下载进度
         req.downloadProgress(queue: self.queue) {
@@ -47,7 +47,7 @@ public class xDownload: xRequest {
     
     // MARK: - 发送请求
     /// 发送请求
-    public override func start()
+    public override func send()
     {
         self.afDownloadReques.responseData(queue: self.queue) {
             [weak self] (rep) in

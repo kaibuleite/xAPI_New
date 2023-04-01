@@ -48,7 +48,7 @@ extension xAPI {
         xRequestNumber += 1
         xApiRequstList["\(xReq.number)"] = xReq
         xReq.validate()
-        xReq.start()
+        xReq.send()
         return xReq
     }
     
@@ -90,7 +90,7 @@ extension xAPI {
         }
         // 继续下载
         xApiRequstList["\(request.number)"] = request
-        request.start()
+        request.send()
         return request
     }
 }
