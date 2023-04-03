@@ -71,12 +71,14 @@ public class xResponse: NSObject {
         print(">>> 响应数据解析")
         switch self.responseDataAnalyzing {
         case .success:  print("✅正常")
-        case .error:  print("❌错误")
+        case .error:    print("❌错误")
         }
         print(">>> 接口数据解析")
         switch self.apiDataAnalyzing {
         case .success:  print("✅正常")
-        case .error:  print("❌错误")
+        case .error:    print("❌错误")
         }
+        guard let data = self.apiData else { return }
+        print(data)
     }
 }

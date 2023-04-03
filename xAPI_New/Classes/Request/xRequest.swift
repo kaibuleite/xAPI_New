@@ -81,5 +81,13 @@ public class xRequest: NSObject {
         return self
     }
     
+    // MARK: - 打印内容
+    /// 打印内容
+    public func log()
+    {
+        xAPI.logRequestInfo(self)
+        self.response.log()
+    }
+    
 }
 
