@@ -26,30 +26,43 @@ extension xAPI {
                                 method : HTTPMethod,
                                 headers : [String : String]?,
                                 parameters : [String : Any]?,
-                                encoding: ParameterEncoding = URLEncoding.default,
+                                encoding : ParameterEncoding = URLEncoding.default,
                                 queue : DispatchQueue = .main,
                                 progress : @escaping xAPI.xHandlerDownloadProgress,
-                                completed : @escaping xAPI.xHandlerRequestCompleted) -> xDownload
+                                completed : @escaping xAPI.xHandlerRequestCompleted) -> (DownloadRequest, xDownload)
     {
         // 格式化请求数据并保存
         let xReq = xDownload()
         xReq.number = xRequestNumber
         xReq.type = .download
-        xReq.url = self.formatterRequest(url: urlStr)
         xReq.method = method
-        xReq.headers = self.formatterRequest(headers: headers)
-        xReq.parameters = self.formatterRequest(parameters: parameters)
         xReq.encoding = encoding
         xReq.queue = queue
-        xReq.completed = completed
         
-        xReq.progress = progress
-        // 发起请求
-        xRequestNumber += 1
-        xApiRequstList["\(xReq.number)"] = xReq
+        xReq.url = self.formatterRequest(url: urlStr)
+        xReq.headers = self.formatterRequest(headers: headers)
+        xReq.parameters = self.formatterRequest(parameters: parameters)
+        
         xReq.validate()
-        xReq.send()
-        return xReq
+        // 创建AF请求
+        let headers = xReq.getAlamofireHeaders()
+        let afReq = AF.download(xReq.url, method: xReq.method, parameters: xReq.parameters, encoding: xReq.encoding, headers: headers) {
+            (req) in
+            // 配置超时时长
+            req.timeoutInterval = self.getDownloadTimeoutInterval()
+        }
+        // 下载进度
+        afReq.downloadProgress(queue: xReq.queue) {
+            (pro) in
+            let cur = pro.completedUnitCount
+            let tot = pro.totalUnitCount
+            let fra = pro.fractionCompleted
+            progress(cur, tot, fra)
+        }
+        // 开始下载
+        self.downloadResuming(afReq, xReq: xReq, completed: completed)
+        xRequestNumber += 1
+        return (afReq, xReq)
     }
     
     // MARK: - 取消下载
@@ -57,40 +70,47 @@ extension xAPI {
     /// - Parameter request: 下载对象
     /// - Returns: 下载对象
     @discardableResult
-    public static func downloadCancel(request : DownloadRequest,
+    public static func downloadCancel(_ afReq : DownloadRequest,
                                       completed : @escaping xAPI.xHandlerDownloadCancel) -> DownloadRequest
     {
-        request.cancel {
+        afReq.cancel {
             (data) in
             completed(data)
         }
-        return request
+        return afReq
     }
     
     // MARK: - 继续下载
     /// 继续下载
     /// - Parameters:
-    ///   - request: 下载对象
-    ///   - resumeData: 下载到一半的数据
+    ///   - afReq: AF下载请求体
+    ///   - xReq: 自定义下载请求体
     ///   - queue: 消息队列
-    ///   - progress: 下载进度
     ///   - completed: 完成回调
     /// - Returns: 下载对象
-    @discardableResult
-    public static func downloadResuming(request : xDownload,
-                                        resumeData : Data?,
+    public static func downloadResuming(_ afReq : DownloadRequest,
+                                        xReq : xDownload,
                                         queue : DispatchQueue = .main,
-                                        progress : @escaping xAPI.xHandlerDownloadProgress,
-                                        completed : @escaping xAPI.xHandlerRequestCompleted) -> xDownload
+                                        completed : @escaping xAPI.xHandlerRequestCompleted)
     {
-        // 发起请求
-        if let data = resumeData {
-            // 继续下载
-            request.afDownloadReques = AF.download(resumingWith: data)
-        }
+        xReq.queue = queue
         // 继续下载
-        xApiRequstList["\(request.number)"] = request
-        request.send()
-        return request
+        afReq.validate()
+        afReq.response(queue: xReq.queue) {
+            (afRep) in
+            switch afRep.result {
+            case let .success(data):
+                xReq.response.responseState = .success
+                xReq.response.responseData = data
+                
+            case let .failure(error):
+                xReq.response.responseState = .failure
+                xReq.response.responseData = afRep.resumeData
+                xReq.response.responseError = error
+            }
+            self.analyzingResponse(at: xReq)
+            completed(xReq)
+        }
     }
+    
 }

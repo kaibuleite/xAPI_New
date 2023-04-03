@@ -16,50 +16,37 @@ public class xRequest: NSObject {
     public enum SubmitType {
         case normal
         case upload
-        case download
+        case download 
     }
     
     // MARK: - Public Property
+    /// 响应结果
+    public let response = xResponse()
     /// 编号
-    public var number = 0
+    public var number = 0 { willSet { self.response.number = newValue } }
+    /// 时间戳
+    public let timestamp = "\(Int(Date().timeIntervalSince1970))"
     /// 请求类型
     public var type = xRequest.SubmitType.normal
-    /// 链接
-    public var url = ""
     /// 请求方式
     public var method = HTTPMethod.post
-    /// 头部
-    public var headers = [String : String]()
-    /// 参数
-    public var parameters = [String : Any]()
     /// 参数编码方式
     public var encoding : ParameterEncoding = URLEncoding.default
     /// 处理队列
     public var queue = DispatchQueue.main
-    /// 时间戳
-    public var timestamp = ""
-    /// 完成回调
-    public var completed : xAPI.xHandlerRequestCompleted?
+    
+    /// 链接
+    public var url = ""
+    /// 头部
+    public var headers = [String : String]()
+    /// 参数
+    public var parameters = [String : Any]()
+     
     
     // MARK: - 内存释放
     deinit {
-        self.completed = nil
         print("🏀 Request:\(self.number)\t\(self)")
     }
-    
-    // MARK: - AF请求体
-    /// AF请求体
-    public lazy var afRequest : DataRequest = {
-        // 头部处理
-        let headers = self.getAlamofireHeaders()
-        // 创建AF请求
-        let req = AF.request(self.url, method: self.method, parameters: self.parameters, encoding: self.encoding, headers: headers) {
-            (req) in
-            // 配置超时时长
-            req.timeoutInterval = xAPI.getRequestTimeoutInterval()
-        }
-        return req.validate()
-    }()
     
     // MARK: - 转换成AF头部
     /// 转换成AF头部
@@ -72,8 +59,6 @@ public class xRequest: NSObject {
             let header = HTTPHeader.init(name: key, value: value)
             headers.add(header)
         }
-        // 保存时间戳 
-        self.timestamp = "\(Int(Date().timeIntervalSince1970))"
         return headers
     }
     
@@ -94,17 +79,6 @@ public class xRequest: NSObject {
         // 重置参数对象
         self.parameters.removeAll()
         return self
-    }
-    
-    // MARK: - 发送请求
-    /// 发送请求
-    open func send()
-    {
-        self.afRequest.responseData(queue: self.queue) {
-            [weak self] (rep) in
-            guard let self = self else { return }
-            xAPI.checkResponse(rep, at: self)
-        }
     }
     
 }

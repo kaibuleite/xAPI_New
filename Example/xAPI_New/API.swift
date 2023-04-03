@@ -41,13 +41,13 @@ class API: xAPI_New.xAPI {
     
     // MARK: - 重写响应配置
     /* 一般都会解析成JSON,在解析结果里面做进一步处理 */
-    override class func analyzingResponse(at xRep: xResponse) {
-        super.analyzingResponse(at: xRep)
+    /* 考虑一些其他接口类型（Restful）下失败用 ResponseCode 导致无法按照正常流程解析, 可以调用 xReq.response.responseError?.responseCode 查看响应失败码 */
+    override class func analyzingResponse(at xReq: xRequest) {
+        super.analyzingResponse(at: xReq)
     }
-    /* 考虑一些其他接口类型（Restful）下失败用 ResponseCode 导致无法按照正常流程解析 */
-    override class func analyzingResponseFailure(at xRep: xResponse, error: AFError) {
-        super.analyzingResponseFailure(at: xRep, error: error)
-        // 可以判断是否网页崩溃，直接显示网页 
+    /* 一般都是解析成字典*/
+    override class func analyzingApiDictionaryData(_ dict: [String : Any], at xReq: xRequest) {
+        super.analyzingApiDictionaryData(dict, at: xReq)
     }
     /* 常用字典类型接口数据处理*/
     override class func getApiCode(in dict: [String : Any]) -> Int {
@@ -66,7 +66,9 @@ class API: xAPI_New.xAPI {
         if let obj = dict["result"] { data = obj }
         return data
     }
-
+    override class func validateApiState(at xReq: xRequest) {
+        super.validateApiState(at: xReq)
+    }
 }
 
 // MARK: - 响应数据的另一种写法(参考)

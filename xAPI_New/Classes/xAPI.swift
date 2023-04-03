@@ -8,7 +8,9 @@
 import Alamofire
 import xExtension
 
-// MARK: - xAPI
+/// 请求编号
+var xRequestNumber = 0
+
 open class xAPI: NSObject {
     
     // MARK: - 上传文件类型枚举
@@ -63,7 +65,7 @@ open class xAPI: NSObject {
     
     // MARK: - 请求回调
     /// 请求完成回调
-    public typealias xHandlerRequestCompleted = (xResponse) -> Void
+    public typealias xHandlerRequestCompleted = (xRequest) -> Void
     
     // MARK: - 上传回调
     /// 上传进度回调(当前下载量，总数据量，下载进度)
@@ -78,10 +80,6 @@ open class xAPI: NSObject {
     public typealias xHandlerDownloadCancel = (Data?) -> Void
     
     // MARK: - 配置参数
-    /// 请求编号
-    static var xRequestNumber = 0
-    /// 请求体列表
-    public static var xApiRequstList = [String : xRequest]()
     /// 主机域名
     open class func getHostDomainName() -> String {
         return "主机域名，例如baidu.com"
@@ -119,7 +117,7 @@ open class xAPI: NSObject {
         return ret
     }
     /// 格式化Api头部参数
-    open class func formatterRequest(headers: [String : String]?) -> [String : String]
+    open class func formatterRequest(headers : [String : String]?) -> [String : String]
     {
         let head = headers ?? [String : String]()
         return head
@@ -135,119 +133,60 @@ open class xAPI: NSObject {
     ///   - url: 请求url
     ///   - header: 头部参数
     ///   - parameter: 请求参数
-    open class func formatterSign(url: String,
-                                  header: [String : String],
-                                  parameter: [String : Any]) -> String?
+    open class func formatterSign(url : String,
+                                  header : [String : String],
+                                  parameter : [String : Any]) -> String?
     {
         return nil
     }
     
     // MARK: - 响应数据
-    // TODO: 数据校验
-    /// 判断响应数据
-    open class func checkResponse(_ afRep : AFDataResponse<Data>,
-                                  at xReq : xRequest)
-    {
-        let xRep = xResponse.init(from: xReq)
-        switch afRep.result {
-        case let .success(obj):
-            xRep.responseData = obj
-            xRep.responseState = .success
-            self.analyzingResponse(at: xRep)
-            
-        case let .failure(err):
-            xRep.responseData = afRep.data
-            xRep.responseState = .failure
-            self.analyzingResponseFailure(at: xRep, error: err)
-            // 打印请示求败日志
-            self.logResponseError(err)
-            self.logRequestInfo(xReq)
-        }
-        xReq.completed?(xRep)
-        xApiRequstList.removeValue(forKey: "\(xReq.number)")
-    }
-    /// 判断上传数据
-    open class func checkUploadResponse(_ afRep : AFDataResponse<Data>,
-                                        at xReq : xUpload)
-    {
-        self.checkResponse(afRep, at: xReq)
-    }
-    /// 判断下载数据
-    open class func checkDownloadResponse(_ afRep : AFDownloadResponse<Data>,
-                                          at xReq : xDownload)
-    {
-        let xRep = xResponse.init(from: xReq)
-        switch afRep.result {
-        case let .success(obj):
-            xRep.responseData = obj
-            xRep.responseState = .success
-            self.analyzingResponse(at: xRep)
-            
-        case let .failure(err):
-            xRep.responseData = afRep.resumeData
-            xRep.responseState = .failure
-            self.analyzingResponseFailure(at: xRep, error: err)
-            // 打印请示求败日志
-            self.logResponseError(err)
-            self.logRequestInfo(xReq)
-        }
-        xReq.completed?(xRep)
-        xApiRequstList.removeValue(forKey: "\(xReq.number)")
-    }
     // TODO: 数据解析
     /// 解析响应数据
     /// - Parameter data: 要解析的数据
     /// - Returns: 解析结果
-    open class func analyzingResponse(at xRep: xResponse)
+    open class func analyzingResponse(at xReq : xRequest)
     {
-        xRep.responseDataAnalyzing = .error
+        let xRep = xReq.response
+        if let error = xRep.responseError {
+            // 打印请示求败日志
+            self.logResponseError(error)
+            self.logRequestInfo(xReq)
+        }
         // 尝试解析成JSON
+        xRep.responseDataAnalyzing = .error
         guard let data = xRep.responseData as? Data else { return }
         guard let json = try? JSONSerialization.jsonObject(with: data, options: .mutableContainers) else { return }
         xRep.responseDataAnalyzing = .success
         xRep.apiData = json
         // 尝试解析接口数据
-        self.analyzingApiData(at: xRep)
-    }
-    /// 解析失败数据
-    /// - Parameters:
-    ///   - error: 错误内容
-    ///   - data: 失败内容
-    /// - Returns: 解析结果
-    open class func analyzingResponseFailure(at xRep: xResponse,
-                                             error : AFError)
-    {
-        xRep.responseDataAnalyzing = .error
-        xRep.responseCode = error.responseCode ?? 200
-        xRep.responseErrorReason = error.localizedDescription
-        // 如果响应失败仍有数据返回，尝试解析
-        guard xRep.responseData != nil else { return }
-        self.analyzingResponse(at: xRep)
+        self.analyzingApiData(at: xReq)
     }
     
     // MARK: - 接口数据
     // TODO: 数据解析
     /// 解析接口数据
     /// - Parameter xRep: 请求体
-    open class func analyzingApiData(at xRep: xResponse)
+    open class func analyzingApiData(at xReq : xRequest)
     {
+        let xRep = xReq.response
         xRep.apiDataAnalyzing = .error
         guard let apiData = xRep.apiData else { return }
         if let data = apiData as? Data {
             // 接口数据为字符串
             let str = String(data: data, encoding: .utf8) ?? ""
-            self.analyzingApiStringData(str, at: xRep)
+            self.analyzingApiStringData(str, at: xReq)
         } else
         if let dict = apiData as? [String : Any] {
             // 接口数据为字典
-            self.analyzingApiDictionaryData(dict, at: xRep)
+            self.analyzingApiDictionaryData(dict, at: xReq)
         } else
         if let array = apiData as? [Any] {
             // 接口数据为数组
-            self.analyzingApiArrayData(array, at: xRep)
+            self.analyzingApiArrayData(array, at: xReq)
         } else {
             // 接口数据未定义的类型
-            self.analyzingApiUnknownData(apiData, at: xRep)
+            self.analyzingApiUnknownData(apiData, at: xReq)
         }
     }
     /// 解析接口数据——字符串
@@ -255,7 +194,7 @@ open class xAPI: NSObject {
     ///   - str: 要解析的字符串
     ///   - xRep: 响应结果
     open class func analyzingApiStringData(_ str : String,
-                                           at xRep : xResponse)
+                                           at xReq : xRequest)
     {
         print("\(#function) in \(type(of: self))")
         print("❗️ 接口返回字符串")
@@ -265,8 +204,9 @@ open class xAPI: NSObject {
     ///   - str: 要解析的字典
     ///   - xRep: 响应结果
     open class func analyzingApiDictionaryData(_ dict : [String : Any],
-                                               at xRep : xResponse)
+                                               at xReq : xRequest)
     {
+        let xRep = xReq.response
         xRep.apiDataAnalyzing = .success
         // 错误码
         xRep.apiCode = self.getApiCode(in: dict)
@@ -275,14 +215,14 @@ open class xAPI: NSObject {
         // 接口数据
         xRep.apiData = self.getApiData(in: dict)
         // 校验
-        self.validateApiState(at: xRep)
+        self.validateApiState(at: xReq)
     }
     /// 解析接口数据——数组
     /// - Parameters:
     ///   - str: 要解析的数组
     ///   - xRep: 响应结果
     open class func analyzingApiArrayData(_ array : [Any],
-                                          at xRep : xResponse)
+                                          at xReq : xRequest)
     {
         print("\(#function) in \(type(of: self))")
         print("❗️ 接口返回数组")
@@ -292,7 +232,7 @@ open class xAPI: NSObject {
     ///   - str: 要解析的数据
     ///   - xRep: 响应结果
     open class func analyzingApiUnknownData(_ obj : Any,
-                                            at xRep : xResponse)
+                                            at xReq : xRequest)
     {
         print("\(#function) in \(type(of: self))")
         print("❗️ 接口返回未知类型\n\(obj)")
@@ -325,20 +265,23 @@ open class xAPI: NSObject {
         return data
     }
     /// 校验接口状态
-    open class func validateApiState(at xRep : xResponse)
+    open class func validateApiState(at xReq : xRequest)
     {
         // 接口重写，下边是参考
+        let xRep = xReq.response
         xRep.apiState = .success
         if xRep.apiCode != 0, xRep.apiCode != 1000 {
             xRep.apiState = .failure
         }
-        print("\(xRep.apiState == .success ? "⭕️" : "❌") CODE =【\(xRep.apiCode)】\tMSG =【\(xRep.apiMessage)】")
+        let code = xRep.apiCode
+        let message = xRep.apiMessage
+        print("\(xRep.apiState == .success ? "⭕️" : "❌") CODE =【\(code)】\tMSG =【\(message)】")
         // 重新登录提示
         let reLoginMsgList = ["重新登录提示1",
                               "重新登录提示2",
                               "重新登录提示3"]
         for obj in reLoginMsgList {
-            guard obj == xRep.apiMessage else { continue }
+            guard message.xContains(subStr: obj) else { continue }
             // 发送重新登录信息
             return
         }
@@ -347,10 +290,10 @@ open class xAPI: NSObject {
                              "过滤提示2",
                              "过滤提示3"]
         for obj in unshowMsgList {
-            guard obj == xRep.apiMessage else { continue }
+            guard message.xContains(subStr: obj) else { continue }
             return
         }
-        xRep.apiMessage.xAlertTip()
+        message.xAlertTip()
     }
     
 }

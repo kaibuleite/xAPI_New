@@ -34,33 +34,76 @@ extension xAPI {
                               method : HTTPMethod = .post,
                               headers : [String : String]? = nil,
                               parameters : [String : Any]?,
-                              encoding: ParameterEncoding = URLEncoding.default,
+                              encoding : ParameterEncoding = URLEncoding.default,
                               queue : DispatchQueue = .main,
                               progress : @escaping xAPI.xHandlerUploadProgress,
-                              completed : @escaping xAPI.xHandlerRequestCompleted) -> xUpload
+                              completed : @escaping xAPI.xHandlerRequestCompleted) -> (UploadRequest, xUpload)
     {
         // 格式化请求数据并保存
         let xReq = xUpload()
         xReq.number = xRequestNumber
         xReq.type = .upload
-        xReq.url = self.formatterRequest(url: urlStr)
         xReq.method = method
-        xReq.headers = self.formatterRequest(headers: headers)
-        xReq.parameters = self.formatterRequest(parameters: parameters)
         xReq.encoding = encoding
         xReq.queue = queue
-        xReq.completed = completed
+        
+        xReq.url = self.formatterRequest(url: urlStr)
+        xReq.headers = self.formatterRequest(headers: headers)
+        xReq.parameters = self.formatterRequest(parameters: parameters)
         
         xReq.fileData = fileData
         xReq.fileKey = fileKey
         xReq.fileName = fileName
         xReq.fileType = fileType
-        xReq.progress = progress
-        // 发起请求
-        xRequestNumber += 1
-        xApiRequstList["\(xReq.number)"] = xReq
+        
         xReq.validate()
-        xReq.send()
-        return xReq
+        // 创建AF请求
+        let headers = xReq.getAlamofireHeaders()
+        let afReq = AF.upload(multipartFormData: {
+            (formData) in
+            // 把参数塞到表单里(仅限字符串)
+            for (key, value) in xReq.parameters {
+                guard let obj = value as? String else { continue }
+                guard let data = obj.data(using: .utf8) else { continue }
+                formData.append(data, withName: key)
+            }
+            // 把文件塞到表单里
+            formData.append(xReq.fileData,
+                            withName: xReq.fileKey,
+                            fileName: xReq.fileName,
+                            mimeType: xReq.fileType.mimeType)
+            
+        }, to: xReq.url, method: xReq.method, headers: headers) {
+            (req) in
+            // 配置超时时长
+            req.timeoutInterval = self.getUploadTimeoutInterval()
+        }
+        // 上传进度
+        afReq.uploadProgress(queue: xReq.queue) {
+            (pro) in
+            let cur = pro.completedUnitCount
+            let tot = pro.totalUnitCount
+            let fra = pro.fractionCompleted
+            progress(cur, tot, fra)
+        }
+        // 开始上传
+        afReq.validate()
+        afReq.response(queue: xReq.queue) {
+            (afRep) in
+            switch afRep.result {
+            case let .success(data):
+                xReq.response.responseState = .success
+                xReq.response.responseData = data
+                
+            case let .failure(error):
+                xReq.response.responseState = .failure
+                xReq.response.responseData = afRep.data
+                xReq.response.responseError = error
+            }
+            self.analyzingResponse(at: xReq)
+            completed(xReq)
+        }
+        xRequestNumber += 1
+        return (afReq, xReq)
     }
 }
