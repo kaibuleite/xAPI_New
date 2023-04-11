@@ -10,9 +10,6 @@ import Alamofire
 
 public class xDownload: xRequest {
     
-    // MARK: - 内存释放
-    deinit {
-        print("🏉 Download:\(self.number)\t\(self)")
-    }
+    override var typeEmoji: String { return "🏉" }
     
 }

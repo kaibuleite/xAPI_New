@@ -20,6 +20,7 @@ public class xRequest: NSObject {
     }
     
     // MARK: - Public Property
+    var typeEmoji : String { return "🏀" }
     /// 响应结果
     public let response = xResponse()
     /// 编号
@@ -45,7 +46,7 @@ public class xRequest: NSObject {
     
     // MARK: - 内存释放
     deinit {
-        print("🏀 Request:\(self.number)\t\(self)")
+        print("\(self.typeEmoji) Req:\(self.number)\t\(self)")
     }
     
     // MARK: - 转换成AF头部

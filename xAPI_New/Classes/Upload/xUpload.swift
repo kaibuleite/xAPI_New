@@ -10,6 +10,7 @@ import Alamofire
 
 public class xUpload: xRequest {
     
+    override var typeEmoji: String { return "🏈" }
     /// 文件
     public var fileData = Data()
     /// 文件名称
@@ -18,10 +19,5 @@ public class xUpload: xRequest {
     public var fileKey = ""
     /// 文件类型
     public var fileType = xAPI.xUploadFileType.jpg
-    
-    // MARK: - 内存释放
-    deinit {
-        print("🏈 Upload:\(self.number)\t\(self)")
-    }
     
 }

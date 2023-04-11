@@ -56,7 +56,7 @@ public class xResponse: NSObject {
     
     // MARK: - 内存释放
     deinit {
-        print("⚽️ Response:\(self.number)\t\(self)")
+        print("⚽️ Rep:\(self.number)\t\(self)")
     }
     
     // MARK: - 打印内容
