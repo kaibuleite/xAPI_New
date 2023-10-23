@@ -5,6 +5,7 @@
 //  Created by Mac on 2021/8/27.
 //
 
+import Foundation
 import Alamofire
 import xExtension
 
@@ -13,7 +14,7 @@ var xRequestNumber = 0
 
 open class xAPI: NSObject {
     
-    // MARK: - 上传文件类型枚举
+    // MARK: - 枚举
     /// 上传文件类型枚举
     public enum xUploadFileType {
         // 图片
@@ -63,37 +64,41 @@ open class xAPI: NSObject {
         }
     }
     
-    // MARK: - 请求回调
+    // MARK: - 回调
     /// 请求完成回调
     public typealias xHandlerRequestCompleted = (xRequest) -> Void
-    
-    // MARK: - 上传回调
     /// 上传进度回调(当前下载量，总数据量，下载进度)
     public typealias xHandlerUploadProgress = (Int64, Int64, Double) -> Void
     /// 上传取消回调(返回中断数据)
     public typealias xHandlerUploadCancel = (Data?) -> Void
-    
-    // MARK: - 下载回调
     /// 下载进度回调(当前下载量，总数据量，下载进度)
     public typealias xHandlerDownloadProgress = (Int64, Int64, Double) -> Void
     /// 下载取消回调(返回中断数据)
     public typealias xHandlerDownloadCancel = (Data?) -> Void
     
     // MARK: - 配置参数
+    /// 是否显示请求对象释放消息
+    public static var isShowRequestDeinitTipMsg = true
+    /// 是否显示响应对象释放消息
+    public static var isShowResponseDeinitTipMsg = true
     /// 主机域名
-    open class func getHostDomainName() -> String {
+    open class func getHostDomainName() -> String
+    {
         return "主机域名，例如baidu.com"
     }
     /// 请求超时时长(默认60s)
-    open class func getRequestTimeoutInterval() -> TimeInterval {
+    open class func getRequestTimeoutInterval() -> TimeInterval
+    {
         return 60
     }
     /// 上传超时时长(默认60s)
-    open class func getUploadTimeoutInterval() -> TimeInterval {
+    open class func getUploadTimeoutInterval() -> TimeInterval
+    {
         return 60
     }
     /// 下载超时时长(默认60s)
-    open class func getDownloadTimeoutInterval() -> TimeInterval {
+    open class func getDownloadTimeoutInterval() -> TimeInterval
+    {
         return 60
     }
     

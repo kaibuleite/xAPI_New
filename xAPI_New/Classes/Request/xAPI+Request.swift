@@ -7,7 +7,6 @@
 
 import Alamofire
 
-
 extension xAPI {
     
     // MARK: - 请求操作

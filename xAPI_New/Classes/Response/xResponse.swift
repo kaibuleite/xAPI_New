@@ -56,6 +56,7 @@ public class xResponse: NSObject {
     
     // MARK: - 内存释放
     deinit {
+        guard xAPI.isShowResponseDeinitTipMsg else { return }
         print("⚽️ Rep:\(self.number)\t\(self)")
     }
     

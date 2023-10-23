@@ -46,6 +46,7 @@ public class xRequest: NSObject {
     
     // MARK: - 内存释放
     deinit {
+        guard xAPI.isShowRequestDeinitTipMsg else { return }
         print("\(self.typeEmoji) Req:\(self.number)\t\(self)")
     }
     
