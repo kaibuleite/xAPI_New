@@ -39,6 +39,8 @@ extension xAPI {
         xReq.headers = self.formatterRequest(headers: headers)
         xReq.parameters = self.formatterRequest(parameters: parameters)
         
+        self.formatterSign(at: xReq)
+        
         xReq.validate()
         // 创建AF请求
         let headers = xReq.getAlamofireHeaders()

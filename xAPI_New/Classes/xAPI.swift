@@ -138,11 +138,9 @@ open class xAPI: NSObject {
     ///   - url: 请求url
     ///   - header: 头部参数
     ///   - parameter: 请求参数
-    open class func formatterSign(url : String,
-                                  header : [String : String],
-                                  parameter : [String : Any]) -> String?
+    open class func formatterSign(at xReq : xRequest)
     {
-        return nil
+        // 子类实现
     }
     
     // MARK: - 响应数据
