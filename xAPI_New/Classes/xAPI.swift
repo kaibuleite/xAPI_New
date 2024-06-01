@@ -155,6 +155,9 @@ open class xAPI: NSObject {
             // 打印请示求败日志
             self.logResponseError(error)
             self.logRequestInfo(xReq)
+            // 保存出错信息
+            xRep.apiCode = error.responseCode ?? -1
+            xRep.apiMessage = error.localizedDescription
         }
         // 尝试解析成JSON
         xRep.responseDataAnalyzing = .error

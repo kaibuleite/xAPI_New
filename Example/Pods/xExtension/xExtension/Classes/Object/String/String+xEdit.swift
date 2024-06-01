@@ -5,7 +5,7 @@
 //  Created by Mac on 2021/6/10.
 //
 
-import Foundation
+import UIKit
 
 extension String {
     
@@ -35,4 +35,5 @@ extension String {
         self = input.text ?? ""
         return self.count > 0
     }
+    
 }

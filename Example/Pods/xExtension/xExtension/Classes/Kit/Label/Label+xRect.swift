@@ -51,4 +51,5 @@ extension UILabel {
         let textGradientColor = UIColor.init(patternImage: gradientImage)
         self.textColor = textGradientColor
     }
+    
 }

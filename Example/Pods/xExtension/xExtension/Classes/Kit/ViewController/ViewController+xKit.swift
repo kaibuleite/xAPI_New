@@ -17,4 +17,9 @@ extension UIViewController {
     
     /// 请求数据
     @objc open func requestData() { }
+    @objc open func requestDataWhenViewWillAppear() { }
+    @objc open func requestDataWhenViewDidAppear() { }
+    @objc open func requestDataWhenViewWillDisappear() { }
+    @objc open func requestDataWhenViewDidDisappear() { }
+    
 }
